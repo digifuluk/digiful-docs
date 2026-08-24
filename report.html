@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Work Report — Digiful</title>
+
+  <!-- ServiceFlow styles -->
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+
+  <!-- ═══════════════════════════════════════════════════════════
+       DUMMY DATA — remove this block when Supabase is live.
+       Represents: Transactions (Sheet 6) + Client_Balances view
+       + Quarter context.
+       In live mode: SF.CONFIG.MODE = 'live' in config.js and
+       SF.fetchReport() fetches from BASE_URL instead.
+       ═══════════════════════════════════════════════════════════ -->
+  <script>
+    window.SF_DUMMY_REPORT = {
+      status:          'ok',
+      client_plan_id:  'CP-001',
+      client_id:       'CL-001',
+      client_name:     'Acme Ltd',
+      plan_name:       'Growth Plan',
+      credits_per_month: 100,
+
+      quarter: {
+        q_name: 'Q2 2026',
+        months: [4, 5, 6],
+        year:   2026
+      },
+
+      balance: {
+        total_loaded:   400,
+        total_spent:    235,
+        remaining:      165,
+        bonus_received:  20
+      },
+
+      transactions: [
+        /* ── April 2026 ── */
+        {
+          transaction_id: 'TX-2026-04-001',
+          billing_period: '2026-04',
+          billing_month:  4,
+          billing_year:   2026,
+          row_type:       'CREDIT',
+          work_type:      null,
+          service_name:   'Monthly credit load',
+          credit_cost:    100,
+          bonus_credits:  0,
+          status:         'COMPLETE',
+          notes:          'Auto-loaded by runMonthlyCreditLoad()'
+        },
+        {
+          transaction_id: 'TX-2026-04-002',
+          billing_period: '2026-04',
+          billing_month:  4,
+          billing_year:   2026,
+          row_type:       'ORDER',
+          work_type:      'ON_PLAN',
+          service_name:   'SEO Content Audit',
+          credit_cost:    80,
+          bonus_credits:  0,
+          status:         'COMPLETE',
+          notes:          'Full audit delivered 14 Apr'
+        },
+        {
+          transaction_id: 'TX-2026-04-003',
+          billing_period: '2026-04',
+          billing_month:  4,
+          billing_year:   2026,
+          row_type:       'ORDER',
+          work_type:      'REVISION',
+          service_name:   'Homepage copy revision',
+          credit_cost:    30,
+          bonus_credits:  0,
+          status:         'COMPLETE',
+          notes:          'Revision of Q1 SEO copy deliverable'
+        },
+
+        /* ── May 2026 ── */
+        {
+          transaction_id: 'TX-2026-05-001',
+          billing_period: '2026-05',
+          billing_month:  5,
+          billing_year:   2026,
+          row_type:       'CREDIT',
+          work_type:      null,
+          service_name:   'Monthly credit load',
+          credit_cost:    100,
+          bonus_credits:  0,
+          status:         'COMPLETE',
+          notes:          'Auto-loaded by runMonthlyCreditLoad()'
+        },
+        {
+          transaction_id: 'TX-2026-05-002',
+          billing_period: '2026-05',
+          billing_month:  5,
+          billing_year:   2026,
+          row_type:       'ORDER',
+          work_type:      'ON_PLAN',
+          service_name:   'Technical SEO Review',
+          credit_cost:    100,
+          bonus_credits:  20,
+          status:         'APPROVED',
+          notes:          'Scheduled w/c 19 May'
+        },
+        {
+          transaction_id: 'TX-2026-05-003',
+          billing_period: '2026-05',
+          billing_month:  5,
+          billing_year:   2026,
+          row_type:       'ORDER',
+          work_type:      'OFF_PLAN_EMERGENCY',
+          service_name:   'Emergency landing page fix',
+          credit_cost:    25,
+          bonus_credits:  0,
+          status:         'COMPLETE',
+          notes:          'Tracking script conflict resolved'
+        },
+
+        /* ── June 2026 ── (upcoming) */
+        {
+          transaction_id: 'TX-2026-06-001',
+          billing_period: '2026-06',
+          billing_month:  6,
+          billing_year:   2026,
+          row_type:       'CREDIT',
+          work_type:      null,
+          service_name:   'Monthly credit load',
+          credit_cost:    100,
+          bonus_credits:  0,
+          status:         'SCHEDULED',
+          notes:          ''
+        },
+        {
+          transaction_id: 'TX-2026-06-002',
+          billing_period: '2026-06',
+          billing_month:  6,
+          billing_year:   2026,
+          row_type:       'ORDER',
+          work_type:      'ON_PLAN',
+          service_name:   'Google Ads Optimisation',
+          credit_cost:    120,
+          bonus_credits:  0,
+          status:         'SCHEDULED',
+          notes:          'Q2 selection — awaiting May results'
+        },
+
+        /* ── March 2026 ── (previous quarter history) */
+        {
+          transaction_id: 'TX-2026-03-001',
+          billing_period: '2026-03',
+          billing_month:  3,
+          billing_year:   2026,
+          row_type:       'CREDIT',
+          work_type:      null,
+          service_name:   'Monthly credit load',
+          credit_cost:    100,
+          bonus_credits:  0,
+          status:         'COMPLETE',
+          notes:          ''
+        },
+        {
+          transaction_id: 'TX-2026-03-002',
+          billing_period: '2026-03',
+          billing_month:  3,
+          billing_year:   2026,
+          row_type:       'ORDER',
+          work_type:      'ON_PLAN',
+          service_name:   'GA4 Dashboard Build',
+          credit_cost:    150,
+          bonus_credits:  0,
+          status:         'COMPLETE',
+          notes:          'Looker Studio dashboard delivered'
+        },
+      ]
+    };
+  </script>
+
+</head>
+<body>
+
+  <!-- ══ PAGE HEADER ══ -->
+  <div class="page-header">
+    <img
+      class="logo"
+      src="https://cloud-1de12d.becdn.net/media/original/7b7d26a2b6416ed02135772cde49d24f/digiful-logo-blue_2x-100_d-crop_800x800.svg"
+      alt="Digiful"
+    >
+    <p class="eyebrow">Client Retainer</p>
+    <h1>Work Report</h1>
+    <p class="header-desc">Your quarterly and monthly work summary, credit balance, and service status.</p>
+  </div>
+
+  <div class="page-wrap">
+
+    <div id="status-bar" class="status loading">⏳ Loading your report…</div>
+    <div id="info-bar" class="info-bar" style="display:none"></div>
+
+    <div id="main" style="display:none">
+
+      <!-- ══ BALANCE SUMMARY ══ -->
+      <div class="balance-bar" id="balance-bar" style="display:none"></div>
+
+      <!-- ══ QUARTER SUMMARY ══ -->
+      <div class="section-box">
+        <h2>Quarter overview</h2>
+        <p class="section-subtitle">Credit spend across all months in this quarter.</p>
+        <div id="quarter-summary"></div>
+      </div>
+
+      <!-- ══ MONTHLY DETAIL ══ -->
+      <div class="section-box">
+        <h2>Monthly detail</h2>
+        <p class="section-subtitle">Work items and status for the selected month.</p>
+
+        <!-- Month navigation -->
+        <div class="month-nav">
+          <button class="month-nav-btn" id="month-nav-prev" type="button" title="Previous month">&#8249;</button>
+          <span class="month-nav-label" id="month-nav-label"></span>
+          <button class="month-nav-btn" id="month-nav-next" type="button" title="Next month">&#8250;</button>
+        </div>
+
+        <!-- Month dropdown (alternative navigation) -->
+        <select class="month-nav-select" id="month-nav-select" style="margin-bottom:16px;"></select>
+
+        <!-- Work items list -->
+        <div id="work-items"></div>
+
+      </div>
+
+    </div><!-- /main -->
+  </div><!-- /page-wrap -->
+
+  <!-- ServiceFlow scripts — order matters -->
+  <script src="../js/config.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/report.js"></script>
+
+</body>
+</html>

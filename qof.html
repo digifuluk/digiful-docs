@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Your Quarter Services — Digiful</title>
+
+  <!-- ServiceFlow styles -->
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+
+  <!-- ═══════════════════════════════════════════════════════════
+       DUMMY DATA — remove this block when Supabase is live.
+       In live mode: SF.CONFIG.MODE = 'live' in config.js
+       and SF.fetchQOF() will fetch from BASE_URL instead.
+       ═══════════════════════════════════════════════════════════ -->
+  <script>
+    window.SF_DUMMY_QOF = {
+      status:          'ok',
+      q_order_id:      'QO-2026-Q2-001',
+      q_opt_id:        '1',
+      q_id:            'Q-2026-Q2',
+      q_name:          'Q2 2026',
+      q_number:        2,
+      q_year:          2026,
+      month_range:     [4, 5, 6],
+      deadline_date:   '2026-04-25',
+      client_plan_id:  'CP-001',
+      client_id:       'CL-001',
+      client_name:     'Acme Ltd',
+      plan_name:       'Growth Plan',
+      credits_per_month: 100,
+      services: [
+        { q_opt_list_id: '10', service_id: 'SEO-001', display_name: 'SEO Content Audit',       display_description: 'A full audit of your site content against current ranking factors.',  credit_cost: 80,  bonus_credits: 0 },
+        { q_opt_list_id: '11', service_id: 'SEO-002', display_name: 'Technical SEO Review',    display_description: 'Core web vitals, crawl errors, and structured data assessment.',     credit_cost: 100, bonus_credits: 20 },
+        { q_opt_list_id: '12', service_id: 'PPC-001', display_name: 'Google Ads Optimisation', display_description: 'Bid strategy review, negative keyword refresh, and ad copy test.',   credit_cost: 120, bonus_credits: 0 },
+        { q_opt_list_id: '13', service_id: 'DAT-001', display_name: 'GA4 Dashboard Build',     display_description: 'Custom Looker Studio dashboard pulling from your GA4 property.',     credit_cost: 150, bonus_credits: 0 },
+      ],
+      strategies: [
+        {
+          q_strat_list_id: '1',
+          q_opt_id:        '1',
+          q_id:            'Q-2026-Q2',
+          client_ref:      'A',
+          name:            'SEO Focus',
+          description:     'Prioritise organic visibility improvements across Q2 ahead of your product launch.',
+          focus:           'Organic traffic',
+          not_focus:       'Paid acquisition',
+          services: [
+            { q_opt_list_id: '10', service_id: 'SEO-001', display_name: 'SEO Content Audit',    credit_cost: 80,  bonus_credits: 0,  month_recommended: 4 },
+            { q_opt_list_id: '11', service_id: 'SEO-002', display_name: 'Technical SEO Review', credit_cost: 100, bonus_credits: 20, month_recommended: 5 },
+          ]
+        },
+        {
+          q_strat_list_id: '2',
+          q_opt_id:        '1',
+          q_id:            'Q-2026-Q2',
+          client_ref:      'B',
+          name:            'Data & Paid',
+          description:     'Build measurement foundations and optimise paid spend efficiency.',
+          focus:           'Conversion data',
+          not_focus:       'Content volume',
+          services: [
+            { q_opt_list_id: '13', service_id: 'DAT-001', display_name: 'GA4 Dashboard Build',     credit_cost: 150, bonus_credits: 0, month_recommended: 4 },
+            { q_opt_list_id: '12', service_id: 'PPC-001', display_name: 'Google Ads Optimisation', credit_cost: 120, bonus_credits: 0, month_recommended: 6 },
+          ]
+        }
+      ]
+    };
+  </script>
+
+</head>
+<body>
+
+  <!-- ══ PAGE HEADER ══ -->
+  <div class="page-header">
+    <img
+      class="logo"
+      src="https://cloud-1de12d.becdn.net/media/original/7b7d26a2b6416ed02135772cde49d24f/digiful-logo-blue_2x-100_d-crop_800x800.svg"
+      alt="Digiful"
+    >
+    <p class="eyebrow">Client Retainer</p>
+    <h1>Your Quarter Services</h1>
+    <p class="header-desc">After our end of quarter discussion we have selected services aligned to your needs, which you can find out more about on this page.</p>
+  </div>
+
+  <div class="page-wrap">
+
+    <div id="status-bar" class="status loading">⏳ Your form is loading and will appear soon</div>
+    <div id="info-bar" class="info-bar" style="display:none"></div>
+    <div id="intro-text" class="intro-text" style="display:none"></div>
+
+    <div id="main" style="display:none">
+
+      <!-- ══ PART 1 ══ -->
+      <div class="section-box">
+        <h2>Part 1: Service options</h2>
+        <p class="section-subtitle">Browse your available services and strategies for this quarter.</p>
+
+        <div class="browse-label">Choose one of the selected services in the dropdown below to find out more.</div>
+        <select id="svc-select"></select>
+        <div class="detail-panel" id="svc-detail"></div>
+
+        <div class="todo-placeholder" id="already-selected-wrap">
+          <hr class="form-divider">
+          <div class="strat-services-title">Services already selected this quarter</div>
+        </div>
+
+        <div id="strat-browse-wrap" style="display:none">
+          <hr class="form-divider">
+          <div class="browse-label">Choose one of the selected strategies in the dropdown below to find out more.</div>
+          <select id="strat-select"></select>
+          <div class="detail-panel" id="strat-detail"></div>
+        </div>
+
+        <div class="bonus-footnote" id="bonus-footnote" style="display:none">
+          *Bonus credit conditions: one time bonus gift on this service, for this period only. Bonus credits cannot be used on this service at a future time, or on another service.
+        </div>
+      </div>
+
+      <!-- ══ NUDGE ══ -->
+      <div class="nudge" id="nudge">
+        Once you are happy with your selections, please move onto Part 2 by selecting <strong>Show form</strong> below. If you are still unsure please message us in the portal.
+      </div>
+
+      <!-- ══ PART 2 ══ -->
+      <div class="section-box">
+        <h2>Part 2: Confirm your selections <span class="part2-status" id="part2-status">(Not yet submitted)</span></h2>
+        <p class="section-subtitle">Formally authorise your service choices for this quarter.</p>
+
+        <button class="show-form-btn" id="show-form-btn" type="button">
+          Show form <span class="chevron">▼</span>
+        </button>
+
+        <div class="validation-errors" id="validation-errors"></div>
+
+        <div class="part2-body" id="part2-body">
+          <hr class="form-divider">
+
+          <div id="prefill-wrap" style="display:none">
+            <div class="browse-label">Optionally, select a strategy to pre-fill your month selections below. You can adjust individual months freely after selecting.</div>
+            <select id="strat-prefill-select"></select>
+            <hr class="form-divider">
+          </div>
+
+          <div class="browse-label">Select a service for each month below.</div>
+          <div class="month-slots" id="month-slots"></div>
+
+          <div class="credit-counter" id="credit-counter">
+            <div class="credit-row">
+              <span>Selected credits</span>
+              <span class="credit-val" id="cc-selected">0</span>
+            </div>
+            <div class="credit-row bonus-row" id="cc-bonus-row" style="display:none">
+              <span>Bonus credit deduction</span>
+              <span class="credit-val" id="cc-bonus">−0</span>
+            </div>
+            <div class="credit-row total">
+              <span>Total credit spend</span>
+              <span class="credit-val" id="cc-total">0</span>
+            </div>
+          </div>
+
+          <!-- Hidden fields for Formspark payload -->
+          <input type="hidden" id="h-q-order-id">
+          <input type="hidden" id="h-q-opt-id">
+          <input type="hidden" id="h-client-id">
+          <input type="hidden" id="h-client-name">
+          <input type="hidden" id="h-plan-name">
+          <input type="hidden" id="h-quarter">
+          <input type="hidden" id="h-deadline-date">
+          <input type="hidden" id="h-q-strat-ref">
+
+          <hr class="form-divider">
+
+          <div class="checkbox-wrap" id="override-wrap" style="display:none">
+            <input type="checkbox" id="override-checkbox">
+            <label for="override-checkbox">Override previous submission for this form</label>
+          </div>
+
+          <div class="checkbox-wrap">
+            <input type="checkbox" id="auth-checkbox">
+            <label for="auth-checkbox">I authorise these selections for my quarterly plan. I understand if the form is submitted post deadline then this may impact the ability of the agency to complete the full selected work within the quarter.</label>
+          </div>
+
+          <div class="success-msg" id="success-msg">
+            <div class="success-box">
+              <strong>✅ Selections submitted successfully!</strong>
+              Your choices for <span id="success-quarter"></span> have been sent. If there are any further clarifications needed we'll be in touch to confirm.
+              <br>
+              <a class="reload-link" id="reload-link">Made a mistake? Submit again ↩</a>
+            </div>
+          </div>
+
+          <button class="btn-submit" id="submit-btn" type="button">Submit selections →</button>
+
+        </div><!-- /part2-body -->
+      </div><!-- /section-box part2 -->
+
+    </div><!-- /main -->
+  </div><!-- /page-wrap -->
+
+  <!-- ServiceFlow scripts — order matters -->
+  <script src="../js/config.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/qof.js"></script>
+
+</body>
+</html>

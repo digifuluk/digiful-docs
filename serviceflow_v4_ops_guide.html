@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ServiceFlow V4 — Operational Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f3ef;--surface:#fff;--surface2:#f0ede8;--surface3:#e8e4dc;--border:#ddd9d0;--ink:#1a1814;--ink2:#4a4640;--ink3:#7a766e;--ink4:#a09c94;--red:#c0392b;--red-s:rgba(192,57,43,.1);--green:#2c6e49;--green-s:rgba(44,110,73,.1);--blue:#1a4a7a;--blue-s:rgba(26,74,122,.1);--amber:#b8860b;--amber-s:rgba(184,134,11,.1);--purple:#6b3fa0;--purple-s:rgba(107,63,160,.1);}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;background:var(--bg);}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.7;overflow-x:hidden;}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:1000;background:var(--ink);display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:52px;}
+.tb-brand{font-family:'Playfair Display',serif;font-weight:700;font-size:16px;color:#f5f3ef;display:flex;align-items:center;gap:12px;}
+.tb-brand .ver{font-family:'DM Mono',monospace;font-size:9px;background:var(--red);color:#fff;padding:2px 8px;border-radius:2px;letter-spacing:.1em;text-transform:uppercase;}
+.tb-right{display:flex;gap:10px;align-items:center;}
+.btn-pdf{background:transparent;color:#f5f3ef;border:1px solid rgba(255,255,255,.25);padding:6px 14px;font-size:12px;cursor:pointer;border-radius:3px;font-family:'DM Sans',sans-serif;}
+.btn-pdf:hover{background:rgba(255,255,255,.1);}
+.menu-toggle{display:none;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#f5f3ef;padding:6px 10px;border-radius:3px;cursor:pointer;font-size:16px;}
+.layout{display:flex;padding-top:52px;min-height:100vh;}
+.sidebar{width:248px;flex-shrink:0;position:fixed;top:52px;bottom:0;left:0;overflow-y:auto;background:var(--ink);padding:16px 0 60px;scrollbar-width:thin;scrollbar-color:#3a3630 transparent;}
+.sidebar::-webkit-scrollbar{width:3px;}
+.sidebar::-webkit-scrollbar-thumb{background:#3a3630;}
+.nav-label{font-family:'DM Mono',monospace;font-size:9px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.3);padding:16px 20px 5px;}
+.nav-a{display:block;padding:4px 20px;font-size:12px;font-weight:500;color:rgba(255,255,255,.5);text-decoration:none;border-left:2px solid transparent;line-height:1.4;}
+.nav-a:hover{color:rgba(255,255,255,.85);}
+.nav-a.active{color:#f5f3ef;border-left-color:var(--red);background:rgba(192,57,43,.12);}
+.main{margin-left:248px;flex:1;max-width:820px;padding:52px 44px 100px;}
+.hero{padding:44px 0 36px;border-bottom:2px solid var(--ink);margin-bottom:52px;}
+.hero-eye{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-bottom:12px;}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(30px,4vw,50px);font-weight:800;line-height:1.05;color:var(--ink);margin-bottom:14px;letter-spacing:-.02em;}
+.hero h1 em{color:var(--red);font-style:normal;}
+.hero-sub{font-size:15px;color:var(--ink2);max-width:560px;line-height:1.7;margin-bottom:24px;}
+.hero-tags{display:flex;gap:20px;flex-wrap:wrap;}
+.hero-tag{font-family:'DM Mono',monospace;font-size:11px;color:var(--ink3);display:flex;align-items:center;gap:6px;}
+.hero-tag::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--red);display:inline-block;}
+.sec{margin-bottom:60px;}
+.sec-hd{display:flex;align-items:baseline;gap:14px;margin-bottom:26px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.sec-num{font-family:'DM Mono',monospace;font-size:10px;color:var(--ink4);letter-spacing:.1em;flex-shrink:0;}
+.sec-title{font-family:'Playfair Display',serif;font-size:23px;font-weight:700;color:var(--ink);}
+.sub{margin-bottom:36px;}
+.sub-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.sub-title::after{content:'';flex:1;height:1px;background:var(--border);}
+p{color:var(--ink2);margin-bottom:12px;}
+p:last-child{margin-bottom:0;}
+strong{color:var(--ink);font-weight:600;}
+a{color:var(--red);}
+.callout{border-left:3px solid;border-radius:0 4px 4px 0;padding:13px 17px;margin-bottom:16px;font-size:13px;color:var(--ink2);}
+.callout b{display:block;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-weight:500;margin-bottom:5px;}
+.c-red{background:var(--red-s);border-color:var(--red);}
+.c-red b{color:var(--red);}
+.c-blue{background:var(--blue-s);border-color:var(--blue);}
+.c-blue b{color:var(--blue);}
+.c-green{background:var(--green-s);border-color:var(--green);}
+.c-green b{color:var(--green);}
+.c-amber{background:var(--amber-s);border-color:var(--amber);}
+.c-amber b{color:var(--amber);}
+.wt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:20px;}
+.wt-card{border:1px solid var(--border);border-radius:6px;padding:16px;background:var(--surface);border-top:3px solid;}
+.wt-on{border-top-color:var(--green);}
+.wt-off{border-top-color:var(--red);}
+.wt-rev{border-top-color:var(--amber);}
+.wt-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:4px;font-weight:500;}
+.wt-on .wt-lbl{color:var(--green);}
+.wt-off .wt-lbl{color:var(--red);}
+.wt-rev .wt-lbl{color:var(--amber);}
+.wt-name{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:var(--ink);margin-bottom:5px;}
+.wt-desc{font-size:12.5px;color:var(--ink2);line-height:1.55;}
+.wt-rules{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+.wt-rule{font-size:11.5px;color:var(--ink3);display:flex;align-items:flex-start;gap:5px;margin-bottom:3px;line-height:1.45;}
+.wt-rule::before{content:'→';color:var(--ink4);flex-shrink:0;}
+.phase-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:20px;}
+.phase-card{border:1px solid var(--border);border-radius:6px;padding:16px;background:var(--surface);position:relative;}
+.phase-card.cur{border-color:var(--red);background:var(--red-s);}
+.ph-badge{position:absolute;top:10px;right:10px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:2px;}
+.b-live{background:var(--green-s);color:var(--green);}
+.b-cur{background:var(--amber-s);color:var(--amber);}
+.b-fut{background:var(--surface3);color:var(--ink4);}
+.ph-num{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink4);margin-bottom:5px;}
+.phase-card.cur .ph-num{color:var(--red);}
+.ph-name{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:var(--ink);margin-bottom:6px;}
+.ph-desc{font-size:12.5px;color:var(--ink2);line-height:1.55;}
+.rules-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin-bottom:20px;}
+.rule-card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--red);border-radius:0 5px 5px 0;padding:13px 15px;}
+.rn{font-family:'DM Mono',monospace;font-size:9px;color:var(--red);margin-bottom:4px;letter-spacing:.06em;}
+.rt{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:3px;}
+.rd{font-size:12px;color:var(--ink3);line-height:1.5;}
+@media print{.topbar,.sidebar,.menu-toggle{display:none!important;}.main{margin-left:0;padding:20px;max-width:100%;}.wf-body{display:block!important;}.wf-toggle{display:none;}}
+@media(max-width:768px){.sidebar{transform:translateX(-100%);transition:transform .25s;z-index:999;}.sidebar.open{transform:translateX(0);}.main{margin-left:0;padding:22px 18px 80px;}.menu-toggle{display:block;}.wt-grid,.phase-grid,.rules-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="tb-brand">ServiceFlow <span class="ver">V4 · Ops Guide</span></div>
+  <div class="tb-right">
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <button class="btn-pdf" onclick="window.print()">⬇ Print / PDF</button>
+  </div>
+</div>
+<div class="sidebar" id="sidebar">
+  <div class="nav-label">Overview</div>
+  <a class="nav-a" href="#overview">What ServiceFlow Does</a>
+  <a class="nav-a" href="#work-types">Work Types</a>
+  <a class="nav-a" href="#phases">System Phases</a>
+  <a class="nav-a" href="#key-rules">Key Rules</a>
+  <div class="nav-label">Credits &amp; Balances</div>
+  <a class="nav-a" href="#credits-how">How Credits Work</a>
+  <a class="nav-a" href="#credits-monthly">Monthly Credit Load</a>
+  <a class="nav-a" href="#credits-status">Status &amp; Credit Impact</a>
+  <div class="nav-label">Agency Workflows</div>
+  <a class="nav-a" href="#wf-onplan">ON PLAN Work</a>
+  <a class="nav-a" href="#wf-emergency">Emergency Work</a>
+  <a class="nav-a" href="#wf-revision">Revisions</a>
+  <a class="nav-a" href="#wf-partial">Partial Approval</a>
+  <a class="nav-a" href="#wf-cash">Cash Payments</a>
+  <a class="nav-a" href="#wf-cancel">Cancellations</a>
+  <a class="nav-a" href="#wf-break">Retainer Breaks</a>
+  <a class="nav-a" href="#wf-termination">Termination</a>
+  <a class="nav-a" href="#wf-upgrade">Plan Upgrades</a>
+  <a class="nav-a" href="#wf-invoice">Invoice Linking</a>
+  <a class="nav-a" href="#late-req">Late Requests</a>
+  <div class="nav-label">Quarterly Order Form</div>
+  <a class="nav-a" href="#qof-overview">QOF Overview</a>
+  <a class="nav-a" href="#qof-setup">Setting Up a Quarter</a>
+  <a class="nav-a" href="#qof-after">After Submission</a>
+  <a class="nav-a" href="#qof-admin">Admin Mode</a>
+  <div class="nav-label">Email Notifications</div>
+  <a class="nav-a" href="#email-system">Email System</a>
+  <a class="nav-a" href="#email-flags">Per-Client Suppression</a>
+  <div class="nav-label">Checklists</div>
+  <a class="nav-a" href="#cl-monthly">Monthly Checklist</a>
+  <a class="nav-a" href="#cl-quarterly">Quarterly Checklist</a>
+  <a class="nav-a" href="#cl-newclient">New Client Setup</a>
+  <div class="nav-label">Reference</div>
+  <a class="nav-a" href="#ref-sheets">Key Sheets</a>
+  <a class="nav-a" href="#ref-trouble">Troubleshooting</a>
+</div>
+<div class="main" id="mainContent">
+
+<!-- HERO -->
+<div class="hero" id="overview">
+  <div class="hero-eye">Internal Operations · Matt &amp; Emma</div>
+  <h1>ServiceFlow <em>V4</em><br>Operational Guide</h1>
+  <p class="hero-sub">Complete day-to-day reference for running the ServiceFlow credit retainer system — workflows, the Quarterly Order Form, email notifications, and monthly/quarterly checklists.</p>
+  <div class="hero-tags">
+    <div class="hero-tag">Version 4 · April 2026</div>
+    <div class="hero-tag" style="--dot-c:var(--green);">QOF Phase 2 Live</div>
+    <div class="hero-tag" style="--dot-c:var(--ink4);">Internal use only</div>
+  </div>
+</div>
+
+<!-- §01 OVERVIEW -->
+<div class="sec">
+  <div class="sec-hd"><span class="sec-num">§ 01</span><span class="sec-title">What ServiceFlow Does</span></div>
+  <p>ServiceFlow manages credit-based retainer relationships with clients. Each client has a monthly credit allocation which they spend on services each quarter. All financial movement — credits loaded, services ordered, bonuses, refunds — flows through the <strong>Transactions ledger (Sheet 6)</strong>. Everything else in the system feeds into or out of that ledger.</p>
+  <p>The system runs on Google Sheets (data), Google Apps Script (automation), and a custom HTML Quarterly Order Form embedded in the client portal for quarterly service selection.</p>
+
+  <div id="work-types" class="sub" style="margin-top:28px;">
+    <div class="sub-title">The Three Work Types</div>
+    <div class="wt-grid">
+      <div class="wt-card wt-on">
+        <div class="wt-lbl">On Plan</div>
+        <div class="wt-name">Quarterly Business Plan</div>
+        <div class="wt-desc">Services agreed at the quarterly review, selected via the QOF, and scheduled for the coming months. Most predictable and preferred.</div>
+        <div class="wt-rules">
+          <div class="wt-rule">Clients select via the Quarterly Order Form</div>
+          <div class="wt-rule">Credits reserved (not spent) until In Progress</div>
+          <div class="wt-rule">No approval needed after QOF submission</div>
+        </div>
+      </div>
+      <div class="wt-card wt-off">
+        <div class="wt-lbl">Off Plan</div>
+        <div class="wt-name">Emergency / Priority</div>
+        <div class="wt-desc">Urgent client requests outside the quarterly plan. Requires agency approval and pauses any scheduled ON PLAN work.</div>
+        <div class="wt-rules">
+          <div class="wt-rule">Max 2 months of credits (e.g. 300cr for 150/month plan)</div>
+          <div class="wt-rule">Always pauses ON PLAN work → On Hold</div>
+          <div class="wt-rule">7th of month is soft cutoff — late requests flagged</div>
+          <div class="wt-rule">100% credits OR 100% cash — never mixed</div>
+        </div>
+      </div>
+      <div class="wt-card wt-rev">
+        <div class="wt-lbl">Revision</div>
+        <div class="wt-name">Corrections &amp; Amendments</div>
+        <div class="wt-desc">Small corrections or amendments. Can borrow from next quarter's credits if the current allocation is exhausted.</div>
+        <div class="wt-rules">
+          <div class="wt-rule">Borrow limit: 1 month's credits or £200 max</div>
+          <div class="wt-rule">Usually doesn't pause ON PLAN work</div>
+          <div class="wt-rule">Cannot borrow if termination notice is active</div>
+          <div class="wt-rule">All revisions need agency approval</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="phases" class="sub">
+    <div class="sub-title">System Rollout Phases</div>
+    <div class="phase-grid">
+      <div class="phase-card">
+        <div class="ph-badge b-live">Complete</div>
+        <div class="ph-num">Phase 1</div>
+        <div class="ph-name">Manual Operation</div>
+        <div class="ph-desc">Google Sheets with data validation. All data entered manually. Still the basis for most non-QOF work entry.</div>
+      </div>
+      <div class="phase-card cur">
+        <div class="ph-badge b-cur">Current</div>
+        <div class="ph-num">Phase 2</div>
+        <div class="ph-name">QOF &amp; Portal</div>
+        <div class="ph-desc">Quarterly Order Form is live in the client portal. Portal content still being built — clients use it for QOF ordering only at this stage.</div>
+      </div>
+      <div class="phase-card">
+        <div class="ph-badge b-fut">Planned</div>
+        <div class="ph-num">Phase 3</div>
+        <div class="ph-name">Full Self-Service</div>
+        <div class="ph-desc">Full client portal: real-time balances, service browsing, off-plan requests, cancellations, and break requests — all client-initiated.</div>
+      </div>
+    </div>
+    <div class="callout c-blue"><b>Current Reality — Phase 2</b>The QOF is live and working for both clients. All other client communication, OFF PLAN requests, and balance queries still come via email/phone and are entered manually into the Sheets by Matt or Emma.</div>
+  </div>
+</div>
+
+<!-- §02 KEY RULES -->
+<div class="sec" id="key-rules">
+  <div class="sec-hd"><span class="sec-num">§ 02</span><span class="sec-title">Key Rules to Always Remember</span></div>
+  <div class="rules-grid">
+    <div class="rule-card"><div class="rn">Rule 01</div><div class="rt">Credits deduct on "In Progress"</div><div class="rd">Not on Scheduled or Approved. Until In Progress, credits are only reserved — the balance hasn't actually moved.</div></div>
+    <div class="rule-card"><div class="rn">Rule 02</div><div class="rt">Payment is never hybrid</div><div class="rd">Each request is 100% credits OR 100% cash. Two services needing different payment methods = two separate requests.</div></div>
+    <div class="rule-card"><div class="rn">Rule 03</div><div class="rt">Emergency max = 2 months of credits</div><div class="rd">For a 150cr/month plan: max 300cr. Over this = cash payment or plan upgrade. No exceptions without a new contract.</div></div>
+    <div class="rule-card"><div class="rn">Rule 04</div><div class="rt">7th is a soft cutoff</div><div class="rd">Requests after the 7th are flagged late but not blocked. You decide: approve, defer, or reject. Mark is_late_request = TRUE.</div></div>
+    <div class="rule-card"><div class="rn">Rule 05</div><div class="rt">Interruptions never auto-resume</div><div class="rd">Emergency or break work pauses ON PLAN work to On Hold. It doesn't restart automatically — client must re-request at next review.</div></div>
+    <div class="rule-card"><div class="rn">Rule 06</div><div class="rt">Breaks need 30 days notice</div><div class="rd">30-day minimum before the break month starts. You can override (document in break_history), but the rule applies unless overridden.</div></div>
+    <div class="rule-card"><div class="rn">Rule 07</div><div class="rt">Parent records first</div><div class="rd">Clients → Contracts → Client_Plans → Transactions. Always create parent records before dependent rows. Dropdowns enforce this.</div></div>
+    <div class="rule-card"><div class="rn">Rule 08</div><div class="rt">Don't edit Sheet 6 col G row 24+</div><div class="rd">Running balance is GAS-managed from row 24 onwards. To correct after a manual edit, run resetMarkers() — never type directly in those cells.</div></div>
+  </div>
+</div>
+
+<!-- §03 CREDITS -->
+<div class="sec" id="credits-how">
+  <div class="sec-hd"><span class="sec-num">§ 03</span><span class="sec-title">Credits &amp; Balances</span></div>
+  <div class="sub">
+    <div class="sub-title">How Credits Work</div>
+    <p>Every financial movement for a client plan is a row in <strong>Sheet 6 (Transactions)</strong>. The live balance is calculated by <strong>Sheet 1b (Client_Balances) col H</strong> — three SUMIF formulas netting all CREDIT rows (positive) and ORDER rows (negative). Col H is the authoritative figure used by GAS for form validation and is your go-to balance check.</p>
+    <div style="background:var(--ink);border-radius:6px;padding:20px 24px;margin-bottom:16px;font-family:'DM Mono',monospace;color:#f5f3ef;">
+      <div style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:12px;">Example Client Balance — April 2026</div>
+      <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:12px;"><span style="color:rgba(255,255,255,.6);">Monthly credits loaded Jan–Apr (4 × 150)</span><span style="color:#4ff77e;">+600</span></div>
+      <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:12px;"><span style="color:rgba(255,255,255,.6);">Q1 services ordered</span><span style="color:#f77e4f;">-350</span></div>
+      <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.2);font-size:12px;"><span style="color:rgba(255,255,255,.6);">Bonus credits (early adopter scheme)</span><span style="color:#4ff77e;">+400</span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0 0;font-size:14px;"><span style="color:rgba(255,255,255,.6);">Current balance — Sheet 1b col H</span><span style="font-size:17px;">+650</span></div>
+    </div>
+    <p>Transaction types that affect balance: <code style="background:var(--green-s);color:var(--green);padding:1px 6px;border-radius:2px;font-size:11px;">CREDIT</code> monthly allocation (positive), <code style="background:var(--red-s);color:var(--red);padding:1px 6px;border-radius:2px;font-size:11px;">ORDER</code> service debit (negative), <code style="background:var(--purple-s);color:var(--purple);padding:1px 6px;border-radius:2px;font-size:11px;">BONUS</code> extra credits (positive), and REFUND / ADJUSTMENT rows when applicable.</p>
+  </div>
+
+  <div id="credits-monthly" class="sub">
+    <div class="sub-title">Monthly Credit Loading</div>
+    <p>On the 1st of each month, the GAS time-trigger function <strong>runMonthlyCreditLoad()</strong> adds a CREDIT row to Sheet 6 for each active client plan automatically. It includes a duplicate check — if a CREDIT row already exists for that client_plan_id + billing_period combination, it won't create another. Safe to re-run if the trigger fails.</p>
+    <div class="callout c-green"><b>Manual Credit Loading</b>If you need to load credits manually (new client, trigger failure, mid-quarter onboarding), add a CREDIT row directly to Sheet 6: transaction_type = CREDIT, credits = +[monthly amount], billing_period = YYYY-MM (e.g. 2026-04), status = Completed. Use credit_pack_id format: cp[client_plan_id]_[month]_[year] e.g. cp1_4_2026.</div>
+  </div>
+
+  <div id="credits-status" class="sub">
+    <div class="sub-title">Status &amp; Credit Impact</div>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:16px;font-size:13px;">
+      <thead><tr style="background:var(--surface2);"><th style="text-align:left;padding:8px 12px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);border-bottom:2px solid var(--border);">Status</th><th style="text-align:left;padding:8px 12px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);border-bottom:2px solid var(--border);">Credit Impact</th><th style="text-align:left;padding:8px 12px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);border-bottom:2px solid var(--border);">Notes</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:9px 12px;"><span style="background:rgba(44,110,73,.12);color:var(--green);padding:3px 10px;border-radius:100px;font-family:'DM Mono',monospace;font-size:10px;">Scheduled</span></td><td style="padding:9px 12px;color:var(--ink2);">Reserved — not deducted</td><td style="padding:9px 12px;color:var(--ink3);font-size:12px;">Work planned. Credits earmarked only.</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:9px 12px;"><span style="background:rgba(26,74,122,.12);color:var(--blue);padding:3px 10px;border-radius:100px;font-family:'DM Mono',monospace;font-size:10px;">Approved</span></td><td style="padding:9px 12px;color:var(--ink2);">Reserved — not deducted</td><td style="padding:9px 12px;color:var(--ink3);font-size:12px;">Approved and ready to start. Credits still reserved.</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:9px 12px;"><span style="background:rgba(107,63,160,.12);color:var(--purple);padding:3px 10px;border-radius:100px;font-family:'DM Mono',monospace;font-size:10px;">On Hold</span></td><td style="padding:9px 12px;color:var(--ink2);">Reserved — not deducted</td><td style="padding:9px 12px;color:var(--ink3);font-size:12px;">Paused by emergency work. Credits stay reserved.</td></tr>
+        <tr style="border-bottom:1px solid var(--border);background:var(--amber-s);"><td style="padding:9px 12px;"><span style="background:rgba(184,134,11,.2);color:var(--amber);padding:3px 10px;border-radius:100px;font-family:'DM Mono',monospace;font-size:10px;">In Progress</span></td><td style="padding:9px 12px;color:var(--ink);font-weight:600;">Credits deducted NOW</td><td style="padding:9px 12px;color:var(--ink3);font-size:12px;">Work actively being done. Balance moves at this moment.</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:9px 12px;"><span style="background:rgba(74,70,64,.1);color:var(--ink2);padding:3px 10px;border-radius:100px;font-family:'DM Mono',monospace;font-size:10px;">Completed</span></td><td style="padding:9px 12px;color:var(--ink2);">Already deducted</td><td style="padding:9px 12px;color:var(--ink3);font-size:12px;">Work delivered. Credits were deducted at In Progress.</td></tr>
+        <tr><td style="padding:9px 12px;"><span style="background:rgba(192,57,43,.12);color:var(--red);padding:3px 10px;border-radius:100px;font-family:'DM Mono',monospace;font-size:10px;">Cancelled</span></td><td style="padding:9px 12px;color:var(--ink2);">Credits returned</td><td style="padding:9px 12px;color:var(--ink3);font-size:12px;">Cancellation approved. Credits added back automatically.</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-bottom:10px;"><div style="font-size:11px;color:var(--ink3);margin-bottom:6px;">ON PLAN — QOF-submitted (GAS writes as Approved; you move to In Progress when work starts):</div>
+    <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;"><span style="background:rgba(26,74,122,.12);color:var(--blue);padding:4px 11px;border-radius:100px;font-family:'DM Mono',monospace;font-size:10px;">Approved</span><span style="color:var(--ink4);">→</span><span style="background:rgba(184,134,11,.12);color:var(--amber);padding:4px 11px;border-radius:100px;font-family:'DM Mono',monospace;font-size:10px;">In Progress</span><span style="color:var(--ink4);">→</span><span style="background:rgba(74,70,64,.1);color:var(--ink2);padding:4px 11px;border-radius:100px;font-family:'DM Mono',monospace;font-size:10px;">Completed</span></div></div>
+    <div style="margin-bottom:10px;"><div style="font-size:11px;color:var(--ink3);margin-bottom:6px;">OFF PLAN — agency-entered emergency:</div>
+    <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;"><span style="background:rgba(184,134,11,.12);color:var(--amber);padding:4px 11px;border-radius:100px;font-family:'DM Mono',monospace;font-size:10px;">Pending</span><span style="color:var(--ink4);">→</span><span style="background:rgba(26,74,122,.12);color:var(--blue);padding:4px 11px;border-radius:100px;font-family:'DM Mono',monospace;font-size:10px;">Approved</span><span style="color:var(--ink4);">→</span><span style="background:rgba(184,134,11,.12);color:var(--amber);padding:4px 11px;border-radius:100px;font-family:'DM Mono',monospace;font-size:10px;">In Progress</span><span style="color:var(--ink4);">→</span><span style="background:rgba(74,70,64,.1);color:var(--ink2);padding:4px 11px;border-radius:100px;font-family:'DM Mono',monospace;font-size:10px;">Completed</span></div></div>
+    <div><div style="font-size:11px;color:var(--ink3);margin-bottom:6px;">Side paths:</div>
+    <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:6px;"><span style="background:rgba(26,74,122,.12);color:var(--blue);padding:4px 11px;border-radius:100px;font-family:'DM Mono',monospace;font-size:10px;">Any reserved status</span><span style="color:var(--ink4);">→</span><span style="background:rgba(107,63,160,.12);color:var(--purple);padding:4px 11px;border-radius:100px;font-family:'DM Mono',monospace;font-size:10px;">On Hold</span><span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--ink3);margin-left:4px;">(emergency arrives)</span></div>
+    <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;"><span style="background:rgba(26,74,122,.12);color:var(--blue);padding:4px 11px;border-radius:100px;font-family:'DM Mono',monospace;font-size:10px;">Any reserved status</span><span style="color:var(--ink4);">→</span><span style="background:rgba(192,57,43,.12);color:var(--red);padding:4px 11px;border-radius:100px;font-family:'DM Mono',monospace;font-size:10px;">Cancelled</span><span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--ink3);margin-left:4px;">(credits returned)</span></div></div>
+  </div>
+</div>
+
+<!-- §04 WORKFLOWS -->
+<div class="sec" id="wf-onplan">
+  <div class="sec-hd"><span class="sec-num">§ 04</span><span class="sec-title">Agency Workflows</span></div>
+
+  <style>
+  .wf{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:18px;}
+  .wf-hd{background:var(--ink);color:#f5f3ef;padding:13px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none;}
+  .wf-hd:hover{background:#2a2620;}
+  .wf-scenario{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.4);}
+  .wf-title{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;flex:1;}
+  .wf-toggle{font-size:17px;color:rgba(255,255,255,.4);transition:transform .2s;flex-shrink:0;}
+  .wf.open .wf-toggle{transform:rotate(180deg);}
+  .wf-body{display:none;}
+  .wf.open .wf-body{display:block;}
+  .wf-step{display:flex;border-bottom:1px solid var(--border);}
+  .wf-step:last-child{border-bottom:none;}
+  .step-n{width:42px;flex-shrink:0;background:var(--surface2);display:flex;align-items:flex-start;justify-content:center;padding-top:14px;font-family:'DM Mono',monospace;font-size:11px;color:var(--ink4);border-right:1px solid var(--border);}
+  .step-c{flex:1;padding:13px 17px;font-size:13px;color:var(--ink2);line-height:1.6;}
+  .step-c strong{color:var(--ink);}
+  .who{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:2px;margin-right:5px;}
+  .w-you{background:var(--red-s);color:var(--red);}
+  .w-cli{background:var(--blue-s);color:var(--blue);}
+  .w-auto{background:var(--green-s);color:var(--green);}
+  .step-detail{margin-top:7px;padding:9px 11px;background:var(--surface2);border-radius:4px;font-size:12px;color:var(--ink3);line-height:1.55;}
+  .checklist{list-style:none;margin-bottom:16px;}
+  .checklist li{display:flex;align-items:flex-start;gap:9px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--ink2);line-height:1.5;}
+  .checklist li:last-child{border-bottom:none;}
+  .checklist li::before{content:'□';font-size:15px;color:var(--ink4);flex-shrink:0;}
+  .ref-table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:13px;}
+  .ref-table th{text-align:left;padding:8px 12px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);background:var(--surface2);border-bottom:2px solid var(--border);}
+  .ref-table td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--ink2);vertical-align:top;line-height:1.5;}
+  .ref-table tr:last-child td{border-bottom:none;}
+  .ref-table tr:hover td{background:var(--surface2);}
+  .mono{font-family:'DM Mono',monospace;font-size:11px;color:var(--ink);}
+  </style>
+
+  <div class="sub">
+    <div class="sub-title">ON PLAN Work</div>
+    <p>ON PLAN work is selected by clients via the Quarterly Order Form and written automatically to Sheet 6 by GAS on submission. There should be no need to manually enter ON PLAN transactions for clients using the QOF. See <a href="#qof-overview">§ 06 Quarterly Order Form</a> for the full process.</p>
+    <p>If you need to manually enter ON PLAN work (historical data, client without portal access): add rows directly to Sheet 6 with transaction_type = ORDER, work_type = ON_PLAN, status = Approved, submission_type = ADMIN.</p>
+  </div>
+
+  <div id="wf-emergency" class="sub">
+    <div class="sub-title">Emergency / Priority Work</div>
+    <div class="wf">
+      <div class="wf-hd" onclick="toggleWf(this)"><div><div class="wf-scenario">Workflow</div><div class="wf-title">OFF PLAN — Emergency or Priority Request</div></div><div class="wf-toggle">⌄</div></div>
+      <div class="wf-body">
+        <div class="wf-step"><div class="step-n">01</div><div class="step-c"><span class="who w-cli">Client</span> contacts you (email/call) with an urgent request outside their quarterly plan.<div class="step-detail">Note: what services they need, estimated credit cost, and whether it's before or after the 7th of the month.</div></div></div>
+        <div class="wf-step"><div class="step-n">02</div><div class="step-c"><span class="who w-you">You</span> <strong>assess feasibility</strong> before agreeing anything.<div class="step-detail">Check Sheet 1b col H for their current balance. Emergency max = credits_per_month × 2. Check your capacity. If after 7th, flag as late request.</div></div></div>
+        <div class="wf-step"><div class="step-n">03</div><div class="step-c"><span class="who w-you">You</span> <strong>enter in Sheet 10 (Requests)</strong>:<div class="step-detail">work_type: OFF_PLAN_EMERGENCY or OFF_PLAN_PRIORITY · status: Approved (agency bypass) · submission_type: ADMIN<br>Then add rows to Sheet 10b (Request_Items) for each service.</div></div></div>
+        <div class="wf-step"><div class="step-n">04</div><div class="step-c"><span class="who w-you">You</span> <strong>create Transaction rows</strong> in Sheet 6 for each approved service.<div class="step-detail">transaction_type: ORDER · credits: negative value (e.g. -200) · status: Approved · work_type: OFF_PLAN_EMERGENCY · billing_period: current month (e.g. 2026-04)</div></div></div>
+        <div class="wf-step"><div class="step-n">05</div><div class="step-c"><span class="who w-you">You</span> <strong>pause ON PLAN work</strong> — find all Scheduled/Approved ON PLAN transactions for this client in Sheet 6. Change status → On Hold for each.<div class="step-detail">Filter Sheet 6: client_plan_id = this client + status = Approved or Scheduled + work_type = ON_PLAN. Change each to On Hold.</div></div></div>
+        <div class="wf-step"><div class="step-n">06</div><div class="step-c"><span class="who w-you">You</span> email client confirming emergency is approved and that their scheduled work is paused until the emergency is complete.</div></div>
+        <div class="wf-step"><div class="step-n">07</div><div class="step-c"><span class="who w-you">You</span> start work: change Transaction status Approved → <strong>In Progress</strong>. Credits are deducted at this moment.</div></div>
+        <div class="wf-step"><div class="step-n">08</div><div class="step-c"><span class="who w-you">You</span> complete work: change status → Completed. Set completed_date. ON PLAN On Hold work can now be re-requested by the client.</div></div>
+      </div>
+    </div>
+    <div class="callout c-red"><b>Credit Limit Exceeded</b>If the request exceeds 2 months of credits, present three options: (A) reduce scope to stay within the limit, (B) pay the full amount in cash — create a Purchased_Services entry (Sheet 13) not a Transaction row, (C) upgrade their retainer plan.</div>
+  </div>
+
+  <div id="wf-revision" class="sub">
+    <div class="sub-title">Revision Work</div>
+    <div class="wf">
+      <div class="wf-hd" onclick="toggleWf(this)"><div><div class="wf-scenario">Workflow</div><div class="wf-title">Revision — Including Quarterly Borrowing</div></div><div class="wf-toggle">⌄</div></div>
+      <div class="wf-body">
+        <div class="wf-step"><div class="step-n">01</div><div class="step-c">Client requests a correction or amendment. Check their current balance in Sheet 1b col H.</div></div>
+        <div class="wf-step"><div class="step-n">02</div><div class="step-c"><span class="who w-you">You</span> assess options:<div class="step-detail">Credits available → proceed normally: Request in Sheet 10, Request_Item in Sheet 10b, Transaction in Sheet 6 with status: Approved.<br>Credits exhausted → offer quarterly borrowing (max 1 month's credits or £200) OR cash payment.<br>Check termination_notice_date in Client_Plans col AC — if set, quarterly borrowing is blocked.</div></div></div>
+        <div class="wf-step"><div class="step-n">03</div><div class="step-c"><span class="who w-you">You</span> create the Transaction. If borrowing from next quarter: set billing_period to e.g. 2026-Q2 and add a note: "Borrowed from Q2: Revision ordered on [date]".</div></div>
+        <div class="wf-step"><div class="step-n">04</div><div class="step-c">Start and complete work as normal. Revisions typically don't pause ON PLAN work unless they're substantial.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="wf-partial" class="sub">
+    <div class="sub-title">Partial Approval</div>
+    <div class="wf">
+      <div class="wf-hd" onclick="toggleWf(this)"><div><div class="wf-scenario">Workflow</div><div class="wf-title">Client Submits Multiple Services — Only Some Can Be Approved</div></div><div class="wf-toggle">⌄</div></div>
+      <div class="wf-body">
+        <div class="wf-step"><div class="step-n">01</div><div class="step-c">Client submits a multi-service request via email/call (Phase 2 — manual entry). Enter the Request header in Sheet 10 and all Request_Items in Sheet 10b.</div></div>
+        <div class="wf-step"><div class="step-n">02</div><div class="step-c"><span class="who w-you">You</span> review each item for capacity and credits. For items you can't fulfil: set item_status → Rejected in Sheet 10b and add rejection_reason (e.g. "Insufficient capacity — suggest next month").</div></div>
+        <div class="wf-step"><div class="step-n">03</div><div class="step-c">Set Request status → Partially Approved in Sheet 10. Create Transactions in Sheet 6 <strong>only for approved items</strong>.</div></div>
+        <div class="wf-step"><div class="step-n">04</div><div class="step-c">Email client with a clear breakdown: what was approved, what was rejected and why, and how to re-request the rejected services next month.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="wf-cash" class="sub">
+    <div class="sub-title">Cash / Out-of-Pocket Payments</div>
+    <div class="wf">
+      <div class="wf-hd" onclick="toggleWf(this)"><div><div class="wf-scenario">Workflow</div><div class="wf-title">Client Pays Cash — No Credits Involved</div></div><div class="wf-toggle">⌄</div></div>
+      <div class="wf-body">
+        <div class="wf-step"><div class="step-n">01</div><div class="step-c">Determine cash payment is needed: credits exhausted, exceeds emergency limit, or client prefers to pay separately for a one-off.</div></div>
+        <div class="wf-step"><div class="step-n">02</div><div class="step-c"><span class="who w-you">You</span> calculate the final price. Check their Bundles (Sheets 19/20) for any applicable retainer discount (typically up to 20%).</div></div>
+        <div class="wf-step"><div class="step-n">03</div><div class="step-c"><span class="who w-you">You</span> create an entry in <strong>Sheet 13 (Purchased_Services) — NOT Transactions</strong>. Set payment_status = Pending.<div class="step-detail">Cash payments never touch the credit ledger. Credit balance is completely unaffected. Do not create a Transaction row for cash work.</div></div></div>
+        <div class="wf-step"><div class="step-n">04</div><div class="step-c">Send invoice via FreeAgent. <strong>Do not start work until full payment is received.</strong> No partial payments accepted.</div></div>
+        <div class="wf-step"><div class="step-n">05</div><div class="step-c">When payment arrives: update Purchased_Services — payment_status → Paid, add payment_reference (e.g. BANK-20260415-001) and payment_method.</div></div>
+      </div>
+    </div>
+    <div class="callout c-red"><b>Never Hybrid</b>Payments are never mixed within a single request. If a client wants two services — one in credits and one in cash — these must be two completely separate requests.</div>
+  </div>
+
+  <div id="wf-cancel" class="sub">
+    <div class="sub-title">Cancellations</div>
+    <div class="wf">
+      <div class="wf-hd" onclick="toggleWf(this)"><div><div class="wf-scenario">Workflow</div><div class="wf-title">Client Requests Cancellation of Scheduled Work</div></div><div class="wf-toggle">⌄</div></div>
+      <div class="wf-body">
+        <div class="wf-step"><div class="step-n">01</div><div class="step-c">Client contacts you requesting cancellation. Ask for a reason — required for the cancellation audit log.</div></div>
+        <div class="wf-step"><div class="step-n">02</div><div class="step-c"><span class="who w-you">You</span> update the Transaction in Sheet 6:<div class="step-detail">cancellation_requested: TRUE · cancellation_request_date: today · cancellation_request_reason: their stated reason</div></div></div>
+        <div class="wf-step"><div class="step-n">03</div><div class="step-c"><span class="who w-you">You</span> decide. If approved: change status → Cancelled. Set cancelled_by, cancelled_date, cancellation_reason. Credits are returned automatically via the Client_Balances SUMIF formula.</div></div>
+        <div class="wf-step"><div class="step-n">04</div><div class="step-c">Email client confirming cancellation and the credits returned. Note they can now order different services with the freed credits.</div></div>
+      </div>
+    </div>
+    <div class="callout c-amber"><b>Cannot Cancel In Progress Work</b>Once status = In Progress, credits are deducted and work has started. Cancellation at this point requires a manual ADJUSTMENT or REFUND transaction and should be discussed case-by-case.</div>
+  </div>
+
+  <div id="wf-break" class="sub">
+    <div class="sub-title">Retainer Breaks</div>
+    <div class="wf">
+      <div class="wf-hd" onclick="toggleWf(this)"><div><div class="wf-scenario">Workflow</div><div class="wf-title">Client Requests a Retainer Break (Full Month Pause)</div></div><div class="wf-toggle">⌄</div></div>
+      <div class="wf-body">
+        <div class="wf-step"><div class="step-n">01</div><div class="step-c">Client requests a break for a specific month. Check their Client_Plans row (Sheet 4):<div class="step-detail">break_eligibility_date (col X): must be in the past (6 months into plan)<br>breaks_used vs breaks_allowed_total (cols W, V): must have remaining breaks<br>Notice period: today's date must be 30+ days before break month 1st (or you override)</div></div></div>
+        <div class="wf-step"><div class="step-n">02</div><div class="step-c">In Sheet 6, find all Scheduled transactions for the break month for this client. Change status → Cancelled. Set cancellation_reason: "Retainer break approved for [month YYYY-MM]".</div></div>
+        <div class="wf-step"><div class="step-n">03</div><div class="step-c">Create a REFUND Transaction in Sheet 6:<div class="step-detail">transaction_type: REFUND · credits: +[credits_per_month] (positive value) · billing_period: break month · status: Completed</div></div></div>
+        <div class="wf-step"><div class="step-n">04</div><div class="step-c">Update Client_Plans (Sheet 4): increment breaks_used (col W) by 1. Update break_history JSON (col AA) with break date, type (FULL_100), and amount.</div></div>
+        <div class="wf-step"><div class="step-n">05</div><div class="step-c">Email client: confirm break approved, list all cancelled work, and clearly state that cancelled work must be re-requested for the following month — it does not auto-resume.</div></div>
+      </div>
+    </div>
+    <div class="callout c-green"><b>Late Notice Override</b>If the client gives fewer than 30 days notice, you can still approve it. Mark is_late_request = TRUE on break-related records and document your override decision in break_history JSON with a clear note.</div>
+  </div>
+
+  <div id="wf-termination" class="sub">
+    <div class="sub-title">Client Termination</div>
+    <div class="wf">
+      <div class="wf-hd" onclick="toggleWf(this)"><div><div class="wf-scenario">Workflow</div><div class="wf-title">Client Gives Termination Notice</div></div><div class="wf-toggle">⌄</div></div>
+      <div class="wf-body">
+        <div class="wf-step"><div class="step-n">01</div><div class="step-c">Client gives notice. Update Client_Plans: set termination_notice_date (col AC) = notice date. Set end_date (col J) = notice date + applicable notice period days.</div></div>
+        <div class="wf-step"><div class="step-n">02</div><div class="step-c">From this point: no quarterly borrowing for revisions. All credits must come from the current period only. Block any Q-borrowing requests.</div></div>
+        <div class="wf-step"><div class="step-n">03</div><div class="step-c">On end_date: change Client_Plans status → Inactive. Cancel all future Scheduled transactions. Set bundle_active → FALSE in Bundles_Plan_Join (Sheet 20) for all this client's bundles.</div></div>
+        <div class="wf-step"><div class="step-n">04</div><div class="step-c">Link any uninvoiced Completed transactions to a final FreeAgent invoice. Send a final "Services Delivered" email summarising all work completed.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="wf-upgrade" class="sub">
+    <div class="sub-title">Plan Upgrades &amp; Downgrades</div>
+    <div class="wf">
+      <div class="wf-hd" onclick="toggleWf(this)"><div><div class="wf-scenario">Workflow</div><div class="wf-title">Client Upgrades or Downgrades Their Retainer Plan</div></div><div class="wf-toggle">⌄</div></div>
+      <div class="wf-body">
+        <div class="wf-step"><div class="step-n">01</div><div class="step-c">New contract signed. Zapier creates a Contracts (Sheet 25) row automatically, or add manually if Zapier isn't configured.</div></div>
+        <div class="wf-step"><div class="step-n">02</div><div class="step-c"><span class="who w-you">You</span> create a new Client_Plans row with the new credit amount, cost, and contract_id. Set is_plan_level_change = TRUE and previous_client_plan_id = the old plan's ID.</div></div>
+        <div class="wf-step"><div class="step-n">03</div><div class="step-c">Update the old Client_Plans row: status → Inactive, end_date = changeover date.</div></div>
+        <div class="wf-step"><div class="step-n">04</div><div class="step-c">Transfer bundles: use GAS custom menu <strong>ServiceFlow → Copy Bundles from Previous Plan</strong>. Script checks each bundle's minimum_plan_value_gbp and copies eligible ones. Review and manually add any newly unlocked bundles.</div></div>
+        <div class="wf-step"><div class="step-n">05</div><div class="step-c">Email client confirming upgrade and listing any new bundles or perks they've unlocked.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="wf-invoice" class="sub">
+    <div class="sub-title">Month-End Invoice Linking</div>
+    <div class="wf">
+      <div class="wf-hd" onclick="toggleWf(this)"><div><div class="wf-scenario">Workflow</div><div class="wf-title">Linking FreeAgent Invoices to Completed Transactions</div></div><div class="wf-toggle">⌄</div></div>
+      <div class="wf-body">
+        <div class="wf-step"><div class="step-n">01</div><div class="step-c">FreeAgent invoice created. Zapier auto-populates Sheet 17 (Invoices) with linked_status = Pending. No transactions linked yet.</div></div>
+        <div class="wf-step"><div class="step-n">02</div><div class="step-c">Work progresses through the month. Transactions move through statuses. Any still In Progress or Scheduled at month end won't link this cycle — they carry to the next.</div></div>
+        <div class="wf-step"><div class="step-n">03</div><div class="step-c"><span class="who w-you">You</span> run the month-end link: <strong>ServiceFlow → Link Invoice to Services</strong> from the Sheets custom menu. Select client, month, invoice number. Script finds all Completed transactions for that client/month and updates their invoice_id column.</div></div>
+        <div class="wf-step"><div class="step-n">04</div><div class="step-c"><span class="who w-auto">Auto</span> Sheet 17 updates: linked_status → Linked, transaction_count, linked_date = today. "Services Delivered" email auto-sent to client.</div></div>
+      </div>
+    </div>
+    <div class="callout c-amber"><b>Completed Transactions Only</b>Only Completed transactions get linked. In Progress or Scheduled work does not link — it carries to next month's invoice run. Ensure all deliverable work is marked Completed before running the link script.</div>
+  </div>
+</div>
+
+<!-- §05 LATE REQUESTS -->
+<div class="sec" id="late-req">
+  <div class="sec-hd"><span class="sec-num">§ 05</span><span class="sec-title">Late Request Handling</span></div>
+  <p>The 7th of each month is the standard order cutoff. Requests after this are flagged but not blocked — you decide what to do.</p>
+  <table class="ref-table">
+    <thead><tr><th>Situation</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td>After 7th — genuine urgency</td><td>Approve at your discretion. Mark is_late_request = TRUE in Sheet 10 and record late_request_reason. Note approval for capacity tracking.</td></tr>
+      <tr><td>After 7th — not urgent</td><td>Defer to the 1st of next month. Inform client politely. Don't enter the request yet — wait for next cycle.</td></tr>
+      <tr><td>Pattern of late requests from same client</td><td>Raise in the next quarterly review. Consider adjusting their QOF submission reminder or deadline_date in Sheet 30.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- §06 QOF -->
+<div class="sec" id="qof-overview">
+  <div class="sec-hd"><span class="sec-num">§ 06</span><span class="sec-title">Quarterly Order Form (QOF)</span></div>
+  <p>The Quarterly Order Form is a custom HTML form embedded in the client portal as an iframe. Clients browse their available services for the quarter, select one service per month slot, and submit. On submission, GAS automatically writes ORDER rows to Sheet 6 and bonus rows to Sheet 31 — no manual data entry needed.</p>
+
+  <div id="qof-setup" class="sub" style="margin-top:24px;">
+    <div class="sub-title">Setting Up a New Quarter</div>
+    <p>All QOF configuration lives in Sheets 26–30. Enter the data here and the form URL generates automatically in Sheet 30 col L.</p>
+    <div style="border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:16px;">
+      <div style="display:flex;border-bottom:1px solid var(--border);"><div style="width:50px;flex-shrink:0;background:var(--surface2);display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border);font-size:18px;padding:4px 0;">①</div><div style="flex:1;padding:13px 16px;"><div style="font-weight:600;color:var(--ink);margin-bottom:3px;font-size:13.5px;">Add the Quarter — Sheet 26 (Quarters)</div><div style="font-size:13px;color:var(--ink2);line-height:1.55;">Add a row: q_name (e.g. Q3 2026), q_number (3), q_year (2026). The q_months formula auto-derives. Use q_months_manual_override if it's a partial quarter (e.g. "5,6" for a 2-month start).</div></div></div>
+      <div style="display:flex;border-bottom:1px solid var(--border);"><div style="width:50px;flex-shrink:0;background:var(--surface2);display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border);font-size:18px;padding:4px 0;">②</div><div style="flex:1;padding:13px 16px;"><div style="font-weight:600;color:var(--ink);margin-bottom:3px;font-size:13.5px;">Build the Service Pool — Sheet 27 (Q_Options)</div><div style="font-size:13px;color:var(--ink2);line-height:1.55;">Add one row per service to offer. Set: client_plan_id (FK), q_id (FK → new Quarter row), service_id (FK), bonus_credits (0 if no bonus). All rows with the same q_opt_id form one pool. Set dependency_override (col L) = TRUE to bypass pre-req checks for specific services.</div></div></div>
+      <div style="display:flex;border-bottom:1px solid var(--border);"><div style="width:50px;flex-shrink:0;background:var(--surface2);display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border);font-size:18px;padding:4px 0;">③</div><div style="flex:1;padding:13px 16px;"><div style="font-weight:600;color:var(--ink);margin-bottom:3px;font-size:13.5px;">Add Strategies (Optional) — Sheets 28 &amp; 29</div><div style="font-size:13px;color:var(--ink2);line-height:1.55;">To show named strategy recommendations (e.g. "Strategy A: Google Ads Focus"), add strategy rows to Sheet 28 (Q_Options_Strat) with a client_ref (A, B, C), name, description, focus, and not_focus. Then pin services + recommended months to each strategy in Sheet 29 (Q_Options_Strat_Services).</div></div></div>
+      <div style="display:flex;border-bottom:1px solid var(--border);"><div style="width:50px;flex-shrink:0;background:var(--surface2);display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border);font-size:18px;padding:4px 0;">④</div><div style="flex:1;padding:13px 16px;"><div style="font-weight:600;color:var(--ink);margin-bottom:3px;font-size:13.5px;">Generate the URL — Sheet 30 (Q_Order_Links)</div><div style="font-size:13px;color:var(--ink2);line-height:1.55;">Add a row: q_opt_id, q_id, quarter_ref (internal label, e.g. Q3 2026 – TRC Full), form_base_url. Set deadline_date (col M) — leave blank for the default of 7th of Month 1. Set expiry_date (col J) if needed. The full ready-to-paste URL auto-generates in col L. Copy it into the client portal iframe src attribute.</div></div></div>
+      <div style="display:flex;border-bottom:1px solid var(--border);"><div style="width:50px;flex-shrink:0;background:var(--surface2);display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border);font-size:18px;padding:4px 0;">⑤</div><div style="flex:1;padding:13px 16px;"><div style="font-weight:600;color:var(--ink);margin-bottom:3px;font-size:13.5px;">Confirm Formspark Webhook</div><div style="font-size:13px;color:var(--ink2);line-height:1.55;">Verify the Formspark webhook is pointing at the current live GAS endpoint. Only needs checking when a new GAS version has been deployed. Current live endpoint and HTML filename are documented in the handoff file.</div></div></div>
+      <div style="display:flex;"><div style="width:50px;flex-shrink:0;background:var(--surface2);display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border);font-size:18px;padding:4px 0;">⑥</div><div style="flex:1;padding:13px 16px;"><div style="font-weight:600;color:var(--ink);margin-bottom:3px;font-size:13.5px;">Load Month 1 Credits (if manual)</div><div style="font-size:13px;color:var(--ink2);line-height:1.55;">If the monthly credit load hasn't yet fired for Month 1 of the new quarter, load manually in Sheet 6. Month 2 and 3 credits are loaded automatically by runMonthlyCreditLoad() on the 1st of each month.</div></div></div>
+    </div>
+
+    <div class="callout c-blue"><b>Expiry vs Void — Sheet 30</b>Use <strong>expiry_date (col J)</strong> for normal link expiry — the redirect chain to a replacement link (col K) is still followed. Use <strong>is_void = TRUE (col N)</strong> for a hard block — no redirect, the form shows an error immediately. Use is_void when you need to stop all access regardless of any redirect setup (e.g. major error, form sent to wrong client).</div>
+  </div>
+
+  <div id="qof-after" class="sub">
+    <div class="sub-title">After a Client Submits the QOF</div>
+    <p>When a client submits, the following happens automatically within seconds. No action needed from you or Emma unless something goes wrong.</p>
+    <table class="ref-table">
+      <thead><tr><th>What Happens</th><th>Where Written</th></tr></thead>
+      <tbody>
+        <tr><td>One ORDER row written per service selected (one per month slot)</td><td>Sheet 6 — Transactions cols A–AM</td></tr>
+        <tr><td>Bonus rows written for any selection with bonus_credits &gt; 0</td><td>Sheet 31 — Order_Bonuses</td></tr>
+        <tr><td>Config balance marker updated for this client</td><td>Config sheet — per client_plan_id row</td></tr>
+        <tr><td>Client confirmation email sent (if not suppressed)</td><td>GAS MailApp → notification_email (Client_Plans col G)</td></tr>
+        <tr><td>Admin notification sent to Digiful agency email</td><td>GAS MailApp → agency address</td></tr>
+      </tbody>
+    </table>
+    <p>ORDER rows are written with status = Approved, work_type = ON_PLAN, submission_type = CLIENT (or ADMIN if admin mode was used). Change status to In Progress when you begin each service — that's when credits actually deduct.</p>
+    <div class="callout c-green"><b>Verifying a Submission</b>After submission, check Sheet 6: filter by client_plan_id + the submission date to find the new rows. Verify the q_order_id (col AH) is populated. Check Sheet 31 if any services had bonus_credits. Check Sheet 1b col H to confirm Client_Balances updated correctly.</div>
+  </div>
+
+  <div id="qof-admin" class="sub">
+    <div class="sub-title">Admin Mode — Submitting on Behalf of a Client</div>
+    <p>If a client can't access the form or you need to complete their quarterly order on their behalf, add <code style="font-family:'DM Mono',monospace;font-size:12px;background:var(--surface2);padding:1px 6px;border-radius:2px;">&amp;admin=true</code> to the form URL before opening it.</p>
+    <table class="ref-table">
+      <thead><tr><th>Admin Mode Change</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Form label</td><td>"Admin completion on behalf of client" displayed below the credit counter</td></tr>
+        <tr><td>Authorisation checkbox text</td><td>"Digiful Admin has been authorised by the client to make these selections for their quarterly plan"</td></tr>
+        <tr><td>submission_type in Sheet 6</td><td>Written as ADMIN instead of CLIENT</td></tr>
+        <tr><td>created_by in Sheet 6</td><td>Written as ADMIN_FORM</td></tr>
+        <tr><td>Client confirmation email</td><td>Suppressed — no email sent to the client</td></tr>
+        <tr><td>Admin notification email</td><td>Still sends to Digiful agency address</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- §07 EMAIL -->
+<div class="sec" id="email-system">
+  <div class="sec-hd"><span class="sec-num">§ 07</span><span class="sec-title">Email Notifications</span></div>
+  <p>GAS sends emails via MailApp (the Google account that owns the GAS script). The client email address is taken from <strong>Client_Plans col G (notification_email)</strong> — this is plan-specific and already in the GAS read chain, making it the preferred source.</p>
+  <p>All sent emails are logged in <strong>Sheet 8 (Email_Log)</strong> with email_type, recipient, sent_date, status (Sent/Failed/Skipped), and the trigger_event. Always check Sheet 8 first when a client says they didn't receive an email.</p>
+
+  <div id="email-flags" class="sub">
+    <div class="sub-title">Per-Client Email Suppression — Client_Plans</div>
+    <p>Each client plan has four email suppression checkboxes in Sheet 4 (cols O–R). These let you switch off specific notification types per client without touching GAS code.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:10px;margin-bottom:16px;">
+      <div style="border:1px solid var(--border);border-radius:5px;padding:13px;background:var(--surface);">
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--blue);margin-bottom:5px;">Col O</div>
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:3px;">disable_order_emails</div>
+        <div style="font-size:12px;color:var(--ink3);line-height:1.5;">Suppresses the quarterly order confirmation email to the client after QOF submission.</div>
+        <div style="margin-top:7px;font-size:11px;color:var(--amber);font-family:'DM Mono',monospace;">Admin notification still sends</div>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:5px;padding:13px;background:var(--surface);">
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--blue);margin-bottom:5px;">Col P</div>
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:3px;">disable_reset_emails</div>
+        <div style="font-size:12px;color:var(--ink3);line-height:1.5;">Suppresses the monthly credit load notification sent on the 1st of each month.</div>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:5px;padding:13px;background:var(--surface);">
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--blue);margin-bottom:5px;">Col Q</div>
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:3px;">disable_reminder_emails</div>
+        <div style="font-size:12px;color:var(--ink3);line-height:1.5;">Suppresses order deadline reminder emails sent ahead of the 7th cutoff.</div>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:5px;padding:13px;background:var(--surface);">
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--blue);margin-bottom:5px;">Col R</div>
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:3px;">disable_delivery_emails</div>
+        <div style="font-size:12px;color:var(--ink3);line-height:1.5;">Suppresses service delivery confirmation emails when work is marked Completed.</div>
+      </div>
+    </div>
+    <p>The two supported quarterly order email scenarios:</p>
+    <table class="ref-table">
+      <thead><tr><th>Scenario</th><th>disable_order_emails</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>Confirmation to admin AND client (default)</td><td><span class="mono">FALSE</span></td><td>Client receives order confirmation. Admin receives notification. Both send.</td></tr>
+        <tr><td>Confirmation to admin only</td><td><span class="mono">TRUE</span></td><td>Client email suppressed. Admin notification still sends.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout c-blue"><b>Admin Submission vs Suppression Flag — Independent Controls</b><strong>admin=true URL param</strong> is session-level — suppresses client email for that one submission regardless of the flag setting. <strong>disable_order_emails (col O)</strong> is plan-level — suppresses client email on every submission for that client. Both can be active simultaneously.</div>
+  </div>
+</div>
+
+<!-- §08 MONTHLY CHECKLIST -->
+<div class="sec" id="cl-monthly">
+  <div class="sec-hd"><span class="sec-num">§ 08</span><span class="sec-title">Monthly Checklist</span></div>
+  <div style="display:grid;grid-template-columns:80px 1fr;gap:0;border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:18px;">
+    <div style="background:var(--ink);color:#f5f3ef;border-right:1px solid var(--border);border-bottom:1px solid rgba(255,255,255,.1);padding:11px 13px;font-family:'DM Mono',monospace;font-size:12px;font-weight:500;display:flex;align-items:flex-start;">1st</div>
+    <div style="background:var(--red-s);border-bottom:1px solid var(--border);padding:11px 15px;font-size:13px;color:var(--ink2);line-height:1.55;"><strong>Credit load</strong> — runMonthlyCreditLoad() fires automatically. Verify CREDIT rows appeared in Sheet 6 for all active client plans. Check Sheet 1b col H updated correctly.</div>
+    <div style="background:var(--surface2);border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:11px 13px;font-family:'DM Mono',monospace;font-size:12px;display:flex;align-items:flex-start;">1st–3rd</div>
+    <div style="background:var(--surface);border-bottom:1px solid var(--border);padding:11px 15px;font-size:13px;color:var(--ink2);line-height:1.55;"><strong>Capacity check</strong> — review your available capacity. Check Sheet 12 (Unavailability) for any agency holidays or reduced-capacity periods. Notify clients early if affected.</div>
+    <div style="background:var(--surface2);border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:11px 13px;font-family:'DM Mono',monospace;font-size:12px;display:flex;align-items:flex-start;">3rd</div>
+    <div style="background:var(--surface);border-bottom:1px solid var(--border);padding:11px 15px;font-size:13px;color:var(--ink2);line-height:1.55;"><strong>Reminder check</strong> — if it's the start of a new quarter, check whether clients have submitted their QOF. Consider sending a manual reminder if the deadline reminder email hasn't triggered.</div>
+    <div style="background:var(--ink);color:#f5f3ef;border-right:1px solid var(--border);border-bottom:1px solid rgba(255,255,255,.1);padding:11px 13px;font-family:'DM Mono',monospace;font-size:12px;font-weight:500;display:flex;align-items:flex-start;">7th</div>
+    <div style="background:var(--red-s);border-bottom:1px solid var(--border);padding:11px 15px;font-size:13px;color:var(--ink2);line-height:1.55;"><strong>Order cutoff</strong> — soft deadline for new requests. After this, flag new requests as late and decide case-by-case. Review any outstanding pending requests and action them before capacity is committed.</div>
+    <div style="background:var(--surface2);border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:11px 13px;font-family:'DM Mono',monospace;font-size:12px;display:flex;align-items:flex-start;">Throughout</div>
+    <div style="background:var(--surface);border-bottom:1px solid var(--border);padding:11px 15px;font-size:13px;color:var(--ink2);line-height:1.55;"><strong>Status updates</strong> — as work starts, change Approved → In Progress (credits deduct at this point). As work is delivered, change In Progress → Completed. Set completed_date on completion. These drive the credit ledger and invoice linking.</div>
+    <div style="background:var(--surface2);border-right:1px solid var(--border);padding:11px 13px;font-family:'DM Mono',monospace;font-size:12px;display:flex;align-items:flex-start;">Last day</div>
+    <div style="background:var(--surface);padding:11px 15px;font-size:13px;color:var(--ink2);line-height:1.55;"><strong>Invoice linking</strong> — run ServiceFlow → Link Invoice to Services from the GAS custom menu. Link all Completed transactions for the month to the FreeAgent invoice. Verify linked_status = Linked in Sheet 17.</div>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Full Monthly Checklist</div>
+    <ul class="checklist">
+      <li>Verify CREDIT rows loaded for all active plans in Sheet 6 (check billing_period matches current month)</li>
+      <li>Check Sheet 1b (Client_Balances) col H shows the correct balance for each client after credit load</li>
+      <li>Review any outstanding late requests from previous month and close or defer them</li>
+      <li>Update work statuses as services start (→ In Progress) and are delivered (→ Completed)</li>
+      <li>Action any pending cancellation requests from clients</li>
+      <li>Link month-end invoices to completed transactions (last working day of month)</li>
+      <li>Check Sheet 8 (Email_Log) for any Failed email sends — re-send manually if needed</li>
+      <li>Run ServiceFlow → View Uninvoiced Services to catch any completed work not yet linked to an invoice</li>
+    </ul>
+  </div>
+</div>
+
+<!-- §09 QUARTERLY CHECKLIST -->
+<div class="sec" id="cl-quarterly">
+  <div class="sec-hd"><span class="sec-num">§ 09</span><span class="sec-title">Quarterly Checklist</span></div>
+  <p>Run through this at the start of each new quarter — typically before or just after the 1st of Month 1.</p>
+  <ul class="checklist">
+    <li>Add the new Quarter row to Sheet 26 (Quarters) with correct q_name, q_number, q_year, and months</li>
+    <li>Build the service pool for each active client in Sheet 27 (Q_Options) — one row per service offering, correct q_opt_id, q_id, service_id, bonus_credits</li>
+    <li>Add strategy groupings to Sheet 28 and service-month assignments to Sheet 29 (if using strategies this quarter)</li>
+    <li>Generate the form URL by adding a row to Sheet 30 (Q_Order_Links) — copy col L URL</li>
+    <li>Set deadline_date (col M in Sheet 30) for each link — or leave blank for the 7th-of-month default</li>
+    <li>Paste the URL into the client portal iframe src for each client</li>
+    <li>Verify the Formspark webhook is pointing at the current live GAS endpoint (check handoff doc for URL)</li>
+    <li>Confirm Month 1 credits have loaded (check Sheet 6 and Sheet 1b for CREDIT rows)</li>
+    <li>Send clients a heads-up that their Quarterly Order Form is ready to complete</li>
+    <li>Book quarterly review meetings to discuss the new quarter's ON PLAN work</li>
+    <li>Check for plan upgrades, bundle renewals, or any Client_Plans changes needed</li>
+    <li>Review break_eligibility_date (Client_Plans col X) for all clients — flag any who become break-eligible this quarter</li>
+    <li>Review next_review_date (Client_Plans col S) — ensure review meetings are scheduled for all active clients</li>
+    <li>Check Service_Promotions (Sheet 21) — any promos starting or ending this quarter that need setting up or closing off</li>
+  </ul>
+</div>
+
+<!-- §10 NEW CLIENT SETUP -->
+<div class="sec" id="cl-newclient">
+  <div class="sec-hd"><span class="sec-num">§ 10</span><span class="sec-title">New Client Setup Checklist</span></div>
+  <p>Follow this order strictly — child records require their parent records to exist first. Dropdowns enforce this but knowing the order saves confusion.</p>
+  <div class="sub">
+    <div class="sub-title">Step 1 — Client Record · Sheet 2 (Clients)</div>
+    <ul class="checklist">
+      <li>Add row: client_id (manual text e.g. NEWCO-2026), client_name, status = Active</li>
+      <li>Generate auth_key (16-char alphanumeric — the key used in all QOF URLs for this client)</li>
+      <li>Set auth_key_created = today, account_manager = your email, add any notes</li>
+    </ul>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Step 2 — Contract · Sheet 25 (Contracts)</div>
+    <ul class="checklist">
+      <li>Add row: contract_id (e.g. CONTRACT-2026-001), contract_name, contract_date, notes (e.g. "Signed via DocuSign")</li>
+      <li>If Zapier is configured to create contracts from FreeAgent/DocuSign, verify the row appeared automatically</li>
+    </ul>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Step 3 — Client Plan · Sheet 4 (Client_Plans)</div>
+    <ul class="checklist">
+      <li>Fill client_id (col B from dropdown) — client_plan_id auto-fills in col A</li>
+      <li>Enter plan_name, credits_per_month, default_cost_credits, cost_gbp_per_month</li>
+      <li>Enter notification_email (col G) — this is the address GAS sends all order confirmation emails to</li>
+      <li>Set status = Active, start_date, contract_id (dropdown → Sheet 25)</li>
+      <li>Set allow_overdraft and overdraft_limit if applicable to this plan</li>
+      <li>Set break_eligibility_date (col X) — typically 6 months from start_date</li>
+      <li>Set breaks_allowed_total (col V) — standard = 2</li>
+      <li>Set break_notice_period_days (col AB) — standard = 30</li>
+      <li>Set next_review_date (col S) and review_frequency_days (col U) — standard = 90 (quarterly)</li>
+      <li>Set all four disable_*_emails flags (cols O–R) — default = FALSE (all emails on)</li>
+    </ul>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Step 4 — Bundles · Sheets 19 &amp; 20</div>
+    <ul class="checklist">
+      <li>Identify which bundles this client is entitled to (check their contract / plan tier)</li>
+      <li>Add rows to Sheet 20 (Bundles_Plan_Join): bundle_id (FK), client_plan_id (FK), bundle_active = TRUE, bundle_start_date = plan start_date, activation_notes</li>
+    </ul>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Step 5 — First Credit Load · Sheet 6 (Transactions)</div>
+    <ul class="checklist">
+      <li>Add a CREDIT row for Month 1: transaction_type = CREDIT, credits = +[credits_per_month], billing_period = YYYY-MM, status = Completed</li>
+      <li>Use credit_pack_id format: cp[client_plan_id]_[month]_[year] e.g. cp3_7_2026</li>
+      <li>Add a row in Sheet 1b (Client_Balances) for this client_plan_id — the formulas populate automatically once the row exists</li>
+      <li>Verify Sheet 1b col H shows the correct balance</li>
+    </ul>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Step 6 — Config Sheet (Balance Marker)</div>
+    <ul class="checklist">
+      <li>Add a row to the Config sheet for this new client plan: config_key = BALANCE_MARKER, client_plan_id = [new ID]</li>
+      <li>Set marker_row = the sheet row number of their first credit row in Sheet 6</li>
+      <li>Set marker_balance = the value in col G of that row (the running balance at that point)</li>
+      <li>From this point, GAS owns and updates the marker on every write</li>
+    </ul>
+  </div>
+  <div class="sub">
+    <div class="sub-title">Step 7 — QOF Setup &amp; Portal</div>
+    <ul class="checklist">
+      <li>Follow the quarterly setup steps (§ 09) to generate their first QOF URL for the current quarter</li>
+      <li>Paste URL into client portal iframe in Kitchen.co</li>
+      <li>Set up client's portal access in Kitchen.co and send welcome email</li>
+      <li>Book the first quarterly review meeting</li>
+    </ul>
+  </div>
+</div>
+
+<!-- §11 KEY SHEETS -->
+<div class="sec" id="ref-sheets">
+  <div class="sec-hd"><span class="sec-num">§ 11</span><span class="sec-title">Key Sheets Quick Reference</span></div>
+  <table class="ref-table">
+    <thead><tr><th>Sheet</th><th>Purpose</th><th>When You Use It</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">1b · Client_Balances</td><td>Authoritative current balance per client plan. <strong>Col H = live balance figure.</strong></td><td>Any time you need to check available credits before approving work.</td></tr>
+      <tr><td class="mono">2 · Clients</td><td>Master client registry. auth_key for QOF URLs lives here.</td><td>New client setup. Auth key generation or reset.</td></tr>
+      <tr><td class="mono">3 · Services</td><td>Service catalogue, credit costs, dependency rules.</td><td>Adding new services. Setting pre-requisites. Checking default costs.</td></tr>
+      <tr><td class="mono">4 · Client_Plans</td><td>Plan config per client — credits, email flags, breaks, contract link.</td><td>Checking plan details. Managing email suppression. Processing breaks. Termination.</td></tr>
+      <tr><td class="mono">6 · Transactions</td><td>Complete financial ledger. Every credit movement lives here.</td><td>Daily — adding orders, updating statuses, manually loading credits.</td></tr>
+      <tr><td class="mono">8 · Email_Log</td><td>Audit trail of all GAS-sent emails.</td><td>Checking if a client received a confirmation. Diagnosing email failures.</td></tr>
+      <tr><td class="mono">10 · Requests</td><td>Order headers for manual multi-service requests.</td><td>Phase 2 manual order entry. Partial approval processing.</td></tr>
+      <tr><td class="mono">10b · Request_Items</td><td>Individual service line items per request.</td><td>With Sheet 10. Approving/rejecting individual services within a request.</td></tr>
+      <tr><td class="mono">12 · Unavailability</td><td>Agency holiday and reduced-capacity periods.</td><td>Adding holidays. Checking availability before approving emergency work dates.</td></tr>
+      <tr><td class="mono">13 · Purchased_Services</td><td>Cash payment tracking (no credits involved).</td><td>Any time a client pays cash instead of using credits.</td></tr>
+      <tr><td class="mono">17 · Invoices</td><td>FreeAgent invoice tracking and payment status.</td><td>Month-end invoice linking. Checking payment status.</td></tr>
+      <tr><td class="mono">19 · Bundles</td><td>Bundle/perk catalogue with eligibility rules.</td><td>Checking what perks a plan tier unlocks. Adding new bundles to offer.</td></tr>
+      <tr><td class="mono">20 · Bundles_Plan_Join</td><td>Bundle assignments per client plan.</td><td>Assigning bundles on new client setup. Plan upgrade bundle transfers.</td></tr>
+      <tr><td class="mono">27 · Q_Options</td><td>Service pool for each quarter.</td><td>Quarterly setup — adding services to the order form pool.</td></tr>
+      <tr><td class="mono">30 · Q_Order_Links</td><td>URL factory for QOF embed links.</td><td>Generating and managing QOF URLs. Setting expiry and deadline dates.</td></tr>
+      <tr><td class="mono">31 · Order_Bonuses</td><td>Bonus credits from QOF submissions.</td><td>Verifying bonus records after QOF submission.</td></tr>
+      <tr><td class="mono">Config sheet</td><td>GAS balance markers per client plan.</td><td>Initialising a new client marker. After any manual edits to Sheet 6 above row 24.</td></tr>
+    </tbody>
+  </table>
+  <div class="callout c-green"><b>GAS Custom Menu Location</b>The ServiceFlow custom menu appears in the top menu bar of Google Sheets when you have the ServiceFlow workbook open. If it's not visible, refresh the sheet. Key functions: Link Invoice to Services · Process Refund · Cancel Order · Add Bonus Credits · Copy Bundles from Previous Plan · Expire Dependency · View Uninvoiced Services · resetMarkers.</div>
+</div>
+
+<!-- §12 TROUBLESHOOTING -->
+<div class="sec" id="ref-trouble">
+  <div class="sec-hd"><span class="sec-num">§ 12</span><span class="sec-title">Troubleshooting</span></div>
+  <table class="ref-table">
+    <thead><tr><th>Problem</th><th>Likely Cause</th><th>Fix</th></tr></thead>
+    <tbody>
+      <tr><td>Client balance in Sheet 1b looks wrong</td><td>A transaction row has incorrect credits value, wrong client_plan_id, or wrong transaction_type. The SUMIF picks up all matching rows.</td><td>Filter Sheet 6 by client_plan_id. Review every row. Correct the bad value. Sheet 1b updates automatically.</td></tr>
+      <tr><td>Col G (running_balance) shows wrong values from row 24+</td><td>A manual edit was made to a GAS-managed row, or rows were inserted above the Config marker without running resetMarkers().</td><td>Run the GAS function resetMarkers() from the Apps Script editor. Never manually edit col G from row 24+ directly.</td></tr>
+      <tr><td>QOF form shows blank or error on load</td><td>URL params wrong (q_opt_id, month_range, auth_key), GAS endpoint URL outdated in the HTML file, or the Q_Order_Links row has is_void = TRUE or is past its expiry_date.</td><td>Check Sheet 30 col L for the correct URL. Verify the HTML file has the current GAS endpoint URL (from handoff doc). Check is_void and expiry_date on the Q_Order_Links row.</td></tr>
+      <tr><td>QOF submission didn't write to Sheet 6</td><td>Formspark webhook is pointing at an old/deprecated GAS endpoint. GAS doPost hit a runtime error. Formspark submission itself failed.</td><td>Check Formspark dashboard for the submission attempt. Check GAS Executions log (Apps Script → Executions). Verify Formspark webhook URL matches current endpoint in handoff doc.</td></tr>
+      <tr><td>Client says they didn't receive a confirmation email</td><td>disable_order_emails = TRUE in Client_Plans col O. notification_email (col G) is wrong or blank. GAS MailApp hit its 100/day quota. Email went to spam.</td><td>Check Sheet 8 (Email_Log) for a row at the submission time. Check Client_Plans col G and col O. Ask client to check spam folder.</td></tr>
+      <tr><td>Dropdown in Sheet 6 shows no options / is empty</td><td>The parent record doesn't exist yet (e.g. client_plan_id doesn't exist in Client_Plans).</td><td>Create the parent record first. Order: Clients → Contracts → Client_Plans → Transactions.</td></tr>
+      <tr><td>Auto-increment ID formula not filling</td><td>Formula wasn't dragged far enough, or was accidentally overwritten. Or the trigger column (col B) is empty — the ID only fills when col B is not empty.</td><td>Re-drag the formula from row 2 down to row 1000. Formula structure: =IF(B2&lt;&gt;"", MAX($A$1:A1)+1, "")</td></tr>
+      <tr><td>Sheet 31 col E (service_id) blank for new submissions</td><td>Previously caused by missing CONFIG.SHEET.CONFIG in GAS. Fixed in GAS v3.2.0.</td><td>Verify GAS is on v3.2.0 or later (check handoff doc). If still blank, check the GAS Executions log for runtime errors in doPost.</td></tr>
+      <tr><td>Invoice not linking to transactions</td><td>invoice_month in Sheet 17 doesn't match billing_period format in Sheet 6. Or transactions aren't yet at Completed status.</td><td>Check invoice_month format (YYYY-MM) matches billing_period in Sheet 6. Ensure all work for the month is Completed before running the link script — In Progress work won't link.</td></tr>
+      <tr><td>Col AJ or AL in Sheet 6 showing a date (e.g. 31/12/1899)</td><td>The column was formatted as Date in Sheets. GAS writes these as String() to prevent it, but if the column format was changed manually it can revert.</td><td>Select cols AJ and AL in Sheet 6. Format → Number → Plain text. This prevents Sheets from misinterpreting integer values as dates.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+</div><!-- /main -->
+
+<script>
+function toggleWf(hd){const w=hd.closest('.wf');w.classList.toggle('open');}
+function toggleMenu(){document.getElementById('sidebar').classList.toggle('open');}
+document.addEventListener('click',function(e){
+  const s=document.getElementById('sidebar');const t=document.querySelector('.menu-toggle');
+  if(s.classList.contains('open')&&!s.contains(e.target)&&e.target!==t)s.classList.remove('open');
+});
+const navAs=document.querySelectorAll('.nav-a[href^="#"]');
+const obs=new IntersectionObserver((entries)=>{
+  entries.forEach(en=>{if(en.isIntersecting){const id=en.target.id;navAs.forEach(a=>{a.classList.remove('active');if(a.getAttribute('href')==='#'+id)a.classList.add('active');});}});
+},{rootMargin:'-15% 0px -75% 0px',threshold:0});
+document.querySelectorAll('[id]').forEach(el=>{if(el.id)obs.observe(el);});
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',function(e){const t=document.querySelector(this.getAttribute('href'));
+  if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth',block:'start'});document.getElementById('sidebar').classList.remove('open');}});
+});
+window.addEventListener('beforeprint',()=>{document.querySelectorAll('.wf').forEach(w=>w.classList.add('open'));});
+</script>
+</body>
+</html>

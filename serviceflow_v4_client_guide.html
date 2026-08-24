@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ServiceFlow V4 — Client Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f3ef;--surface:#fff;--surface2:#f0ede8;--surface3:#e8e4dc;--border:#ddd9d0;--ink:#1a1814;--ink2:#4a4640;--ink3:#7a766e;--ink4:#a09c94;--red:#c0392b;--red-s:rgba(192,57,43,.1);--green:#2c6e49;--green-s:rgba(44,110,73,.1);--blue:#1a4a7a;--blue-s:rgba(26,74,122,.1);--amber:#b8860b;--amber-s:rgba(184,134,11,.1);}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;background:var(--bg);}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.75;overflow-x:hidden;}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:1000;background:var(--ink);display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:52px;}
+.tb-brand{font-family:'Playfair Display',serif;font-weight:700;font-size:16px;color:#f5f3ef;display:flex;align-items:center;gap:12px;}
+.tb-ver{font-family:'DM Mono',monospace;font-size:9px;background:var(--green);color:#fff;padding:2px 8px;border-radius:2px;letter-spacing:.1em;text-transform:uppercase;}
+.tb-right{display:flex;gap:10px;align-items:center;}
+.btn-pdf{background:transparent;color:#f5f3ef;border:1px solid rgba(255,255,255,.25);padding:6px 14px;font-size:12px;cursor:pointer;border-radius:3px;font-family:'DM Sans',sans-serif;}
+.btn-pdf:hover{background:rgba(255,255,255,.1);}
+.menu-toggle{display:none;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#f5f3ef;padding:6px 10px;border-radius:3px;cursor:pointer;font-size:16px;}
+.layout{display:flex;padding-top:52px;min-height:100vh;}
+.sidebar{width:240px;flex-shrink:0;position:fixed;top:52px;bottom:0;left:0;overflow-y:auto;background:var(--ink);padding:16px 0 60px;scrollbar-width:thin;scrollbar-color:#3a3630 transparent;}
+.sidebar::-webkit-scrollbar{width:3px;}
+.sidebar::-webkit-scrollbar-thumb{background:#3a3630;}
+.nav-label{font-family:'DM Mono',monospace;font-size:9px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.3);padding:16px 20px 5px;}
+.nav-a{display:block;padding:5px 20px;font-size:12px;font-weight:500;color:rgba(255,255,255,.5);text-decoration:none;border-left:2px solid transparent;line-height:1.4;}
+.nav-a:hover{color:rgba(255,255,255,.85);}
+.nav-a.active{color:#f5f3ef;border-left-color:var(--green);background:rgba(44,110,73,.12);}
+.main{margin-left:240px;flex:1;max-width:780px;padding:52px 44px 100px;}
+/* HERO */
+.hero{padding:48px 0 40px;border-bottom:2px solid var(--ink);margin-bottom:52px;}
+.hero-eye{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--green);margin-bottom:12px;}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(30px,4vw,48px);font-weight:800;line-height:1.06;color:var(--ink);margin-bottom:14px;letter-spacing:-.02em;}
+.hero h1 em{color:var(--green);font-style:normal;}
+.hero-sub{font-size:16px;color:var(--ink2);max-width:540px;line-height:1.75;margin-bottom:28px;}
+.hero-tags{display:flex;gap:20px;flex-wrap:wrap;}
+.hero-tag{font-family:'DM Mono',monospace;font-size:11px;color:var(--ink3);display:flex;align-items:center;gap:6px;}
+.hero-tag::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;flex-shrink:0;}
+/* SECTIONS */
+.sec{margin-bottom:64px;}
+.sec-hd{display:flex;align-items:baseline;gap:14px;margin-bottom:28px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.sec-num{font-family:'DM Mono',monospace;font-size:10px;color:var(--ink4);letter-spacing:.1em;flex-shrink:0;}
+.sec-title{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--ink);}
+.sub{margin-bottom:36px;}
+.sub-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.sub-title::after{content:'';flex:1;height:1px;background:var(--border);}
+p{color:var(--ink2);margin-bottom:13px;font-size:15px;}
+p:last-child{margin-bottom:0;}
+strong{color:var(--ink);font-weight:600;}
+/* CALLOUTS */
+.callout{border-left:3px solid;border-radius:0 4px 4px 0;padding:14px 18px;margin-bottom:16px;font-size:14px;color:var(--ink2);}
+.callout b{display:block;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-weight:500;margin-bottom:5px;}
+.c-green{background:var(--green-s);border-color:var(--green);}
+.c-green b{color:var(--green);}
+.c-amber{background:var(--amber-s);border-color:var(--amber);}
+.c-amber b{color:var(--amber);}
+.c-red{background:var(--red-s);border-color:var(--red);}
+.c-red b{color:var(--red);}
+.c-blue{background:var(--blue-s);border-color:var(--blue);}
+.c-blue b{color:var(--blue);}
+/* WORK TYPE CARDS */
+.wt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:24px;}
+.wt-card{border:1px solid var(--border);border-radius:6px;padding:18px;background:var(--surface);border-top:3px solid;}
+.wt-plan{border-top-color:var(--green);}
+.wt-emergency{border-top-color:var(--red);}
+.wt-revision{border-top-color:var(--amber);}
+.wt-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:5px;font-weight:500;}
+.wt-plan .wt-lbl{color:var(--green);}
+.wt-emergency .wt-lbl{color:var(--red);}
+.wt-revision .wt-lbl{color:var(--amber);}
+.wt-name{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--ink);margin-bottom:7px;}
+.wt-desc{font-size:13.5px;color:var(--ink2);line-height:1.6;}
+.wt-eg{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12.5px;color:var(--ink3);line-height:1.55;}
+.wt-eg strong{color:var(--ink2);font-size:12px;}
+/* CREDIT BOX */
+.credit-box{background:var(--ink);border-radius:6px;padding:22px 26px;margin-bottom:18px;color:#f5f3ef;font-family:'DM Mono',monospace;}
+.cb-title{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:14px;}
+.cb-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px;}
+.cb-row:last-child{border-bottom:none;}
+.cb-label{color:rgba(255,255,255,.65);}
+.cb-val{font-weight:500;}
+.cb-pos{color:#4ff77e;}
+.cb-neg{color:#f77e4f;}
+.cb-total{font-size:16px;color:#f5f3ef;}
+.cb-divider{border:none;border-top:1px solid rgba(255,255,255,.2);margin:8px 0;}
+/* STATUS PILLS */
+.status-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;margin-bottom:20px;}
+.status-item{display:flex;align-items:flex-start;gap:12px;padding:13px;background:var(--surface);border:1px solid var(--border);border-radius:5px;}
+.status-pill{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;padding:4px 10px;border-radius:100px;white-space:nowrap;flex-shrink:0;margin-top:2px;}
+.sp-pending{background:rgba(184,134,11,.12);color:var(--amber);}
+.sp-approved{background:rgba(26,74,122,.12);color:var(--blue);}
+.sp-progress{background:rgba(184,134,11,.18);color:#8a6400;}
+.sp-completed{background:rgba(44,110,73,.12);color:var(--green);}
+.sp-hold{background:rgba(107,63,160,.12);color:#6b3fa0;}
+.sp-cancelled{background:rgba(192,57,43,.12);color:var(--red);}
+.status-text{font-size:13px;color:var(--ink2);line-height:1.55;}
+.status-text strong{color:var(--ink);}
+/* SCENARIOS */
+.scenario{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:18px;}
+.sc-hd{background:var(--ink);color:#f5f3ef;padding:14px 20px;display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none;}
+.sc-hd:hover{background:#2a2620;}
+.sc-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.4);}
+.sc-title{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;flex:1;}
+.sc-toggle{font-size:18px;color:rgba(255,255,255,.4);transition:transform .2s;flex-shrink:0;}
+.scenario.open .sc-toggle{transform:rotate(180deg);}
+.sc-body{display:none;}
+.scenario.open .sc-body{display:block;}
+.sc-intro{padding:16px 20px 0;font-size:14px;color:var(--ink3);font-style:italic;border-bottom:1px solid var(--border);padding-bottom:14px;}
+.sc-step{display:flex;border-bottom:1px solid var(--border);}
+.sc-step:last-child{border-bottom:none;}
+.sc-n{width:44px;flex-shrink:0;background:var(--surface2);display:flex;align-items:flex-start;justify-content:center;padding-top:16px;font-family:'DM Mono',monospace;font-size:11px;color:var(--ink4);border-right:1px solid var(--border);}
+.sc-c{flex:1;padding:14px 18px;font-size:14px;color:var(--ink2);line-height:1.65;}
+.sc-c strong{color:var(--ink);}
+.sc-note{margin-top:8px;padding:10px 12px;background:var(--surface2);border-radius:4px;font-size:13px;color:var(--ink3);line-height:1.55;}
+/* QUICK REF TABLE */
+.qr-table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:14px;}
+.qr-table th{text-align:left;padding:9px 14px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);background:var(--surface2);border-bottom:2px solid var(--border);}
+.qr-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--ink2);vertical-align:top;line-height:1.55;}
+.qr-table tr:last-child td{border-bottom:none;}
+.qr-table tr:hover td{background:var(--surface2);}
+/* LIMIT CARDS */
+.limit-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:20px;}
+.limit-card{background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:14px;}
+.lc-title{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:5px;}
+.lc-val{font-family:'DM Mono',monospace;font-size:14px;color:var(--green);font-weight:500;margin-bottom:5px;}
+.lc-desc{font-size:12.5px;color:var(--ink3);line-height:1.5;}
+/* CONTACT BOX */
+.contact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px;}
+.contact-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:16px;}
+.cc-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;font-weight:500;}
+.cc-label.cc-form{color:var(--green);}
+.cc-label.cc-bot{color:var(--blue);}
+.cc-label.cc-email{color:var(--ink3);}
+.cc-title{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:5px;}
+.cc-desc{font-size:13px;color:var(--ink2);line-height:1.55;}
+/* QOF STEPS */
+.qof-flow{border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:18px;}
+.qof-step{display:flex;border-bottom:1px solid var(--border);}
+.qof-step:last-child{border-bottom:none;}
+.qof-icon{width:52px;flex-shrink:0;background:var(--surface2);display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border);font-size:20px;}
+.qof-body{flex:1;padding:14px 17px;}
+.qof-title{font-weight:600;color:var(--ink);margin-bottom:3px;font-size:14px;}
+.qof-desc{font-size:13.5px;color:var(--ink2);line-height:1.6;}
+/* PRINT */
+@media print{.topbar,.sidebar,.menu-toggle{display:none!important;}.main{margin-left:0;padding:20px;max-width:100%;}.sc-body{display:block!important;}.sc-toggle{display:none;}}
+/* MOBILE */
+@media(max-width:768px){.sidebar{transform:translateX(-100%);transition:transform .25s;z-index:999;}.sidebar.open{transform:translateX(0);}.main{margin-left:0;padding:24px 18px 80px;}.menu-toggle{display:block;}.wt-grid,.status-grid,.limit-grid,.contact-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="tb-brand">ServiceFlow <span class="tb-ver">Client Guide</span></div>
+  <div class="tb-right">
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <button class="btn-pdf" onclick="window.print()">⬇ Print / PDF</button>
+  </div>
+</div>
+<div class="sidebar" id="sidebar">
+  <div class="nav-label">Getting Started</div>
+  <a class="nav-a" href="#welcome">Welcome</a>
+  <a class="nav-a" href="#how-it-works">How Your Retainer Works</a>
+  <a class="nav-a" href="#your-credits">Your Credits</a>
+  <a class="nav-a" href="#work-types">Types of Work</a>
+  <a class="nav-a" href="#credit-rules">Credit Rules &amp; Limits</a>
+  <div class="nav-label">Quarterly Selections</div>
+  <a class="nav-a" href="#qof">The Quarterly Order Form</a>
+  <a class="nav-a" href="#qof-how">How to Use It</a>
+  <a class="nav-a" href="#quarterly-review">Quarterly Review Meetings</a>
+  <div class="nav-label">Your Work &amp; Status</div>
+  <a class="nav-a" href="#tracking">Tracking Your Work</a>
+  <a class="nav-a" href="#monthly-reset">The Monthly Reset</a>
+  <div class="nav-label">Common Scenarios</div>
+  <a class="nav-a" href="#sc-emergency">Emergency Work</a>
+  <a class="nav-a" href="#sc-priority">Priority Work</a>
+  <a class="nav-a" href="#sc-revision">Revisions &amp; Supplementary</a>
+  <a class="nav-a" href="#sc-break">Taking a Retainer Break</a>
+  <a class="nav-a" href="#sc-cashpay">Paying for Extra Work</a>
+  <a class="nav-a" href="#sc-balance">Checking Your Balance</a>
+  <div class="nav-label">Reference</div>
+  <a class="nav-a" href="#status-guide">Work Status Guide</a>
+  <a class="nav-a" href="#key-dates">Key Dates</a>
+  <a class="nav-a" href="#get-help">Getting Help</a>
+</div>
+<div class="main" id="mainContent">
+
+<!-- HERO -->
+<div class="hero" id="welcome">
+  <div class="hero-eye">Your Retainer Guide · Digiful</div>
+  <h1>Welcome to<br><em>ServiceFlow</em></h1>
+  <p class="hero-sub">ServiceFlow is how we manage your retainer together — your credits, your services, your quarterly plans. This guide explains everything you need to know to get the most from your retainer.</p>
+  <div class="hero-tags">
+    <div class="hero-tag">Version 4 · 2026</div>
+    <div class="hero-tag" style="--dc:var(--green)">For clients</div>
+    <div class="hero-tag" style="--dc:var(--green)">Plain English</div>
+  </div>
+</div>
+
+<!-- §01 HOW IT WORKS -->
+<div class="sec" id="how-it-works">
+  <div class="sec-hd"><span class="sec-num">§ 01</span><span class="sec-title">How Your Retainer Works</span></div>
+  <p>Your retainer gives you a set number of <strong>credits</strong> each month. You spend those credits on services — things like SEO work, Google Ads management, content, analytics, or any other services in your plan. Think of it like a monthly budget: new credits arrive on the 1st of every month, and you decide how to spend them.</p>
+  <p>Unused credits <strong>do not carry over</strong> to the next month. Each month starts fresh. This keeps things clean and avoids complicated running totals building up over time. The only exceptions are very specific situations covered under Off Plan work — and each has clear rules explained below.</p>
+  <div class="callout c-green"><b>The simple version</b>Each month: credits arrive → you select services → we do the work → credits are spent. Simple, transparent, no surprises. We review each quarter and plan the next 3 months work together.</div>
+
+  <div id="your-credits" class="sub" style="margin-top:28px;">
+    <div class="sub-title">Your Credits — What They Are</div>
+    <p>Credits are the currency of your retainer. Every service has a credit cost. When we start working on a service, that many credits are deducted from your balance. Here's an example of how a balance works:</p>
+    <div class="credit-box">
+      <div class="cb-title">Example Quarterly Credit Spend</div>
+      <div class="cb-row"><div class="cb-label">Month 1 — credits received</div><div class="cb-val cb-pos">+150</div></div>
+      <div class="cb-row"><div class="cb-label">Month 1 — SEO Keyword Research</div><div class="cb-val cb-neg">-150</div></div>
+      <div class="cb-row"><div class="cb-label">Month 2 — credits received</div><div class="cb-val cb-pos">+150</div></div>
+      <div class="cb-row"><div class="cb-label">Month 2 — Google Ads Review</div><div class="cb-val cb-neg">-150</div></div>
+      <div class="cb-row"><div class="cb-label">Month 3 — credits received</div><div class="cb-val cb-pos">+150</div></div>
+      <div class="cb-row"><div class="cb-label">Month 3 — Analytics Report</div><div class="cb-val cb-neg">-150</div></div>
+      <hr class="cb-divider">
+      <div class="cb-row"><div class="cb-label">Quarter end balance</div><div class="cb-val cb-total">0</div></div>
+    </div>
+    <p>Credits are used when we start each month on the work — usually by the 7th. With this in mind we ask you finalise the new quarter work choices, or ask for any emergency work by the 7th so we can allocate time to complete it. This is discussed in more detail later. If you are unsure about anything, you can get in touch directly in the client portal — using the AI assistant for general questions and sending us a message for anything specific.</p>
+  </div>
+
+  <div id="work-types" class="sub">
+    <div class="sub-title">On Plan &amp; Off Plan — The Two Umbrellas</div>
+    <p>Everything in your retainer falls into one of two categories:</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+      <div style="background:var(--green-s);border:1px solid var(--green);border-radius:6px;padding:16px;">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--green);margin-bottom:6px;">On Plan</div>
+        <div style="font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--ink);margin-bottom:6px;">Your Quarterly Plan</div>
+        <div style="font-size:13px;color:var(--ink2);line-height:1.6;">Services agreed at your quarterly review and selected on the Quarterly Order Form. Planned, predictable, and pre-approved — the heart of your retainer.</div>
+      </div>
+      <div style="background:var(--red-s);border:1px solid var(--red);border-radius:6px;padding:16px;">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:6px;">Off Plan</div>
+        <div style="font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--ink);margin-bottom:6px;">Everything Else</div>
+        <div style="font-size:13px;color:var(--ink2);line-height:1.6;">Anything outside your agreed quarterly plan — corrections, urgent work, or important new tasks. Has specific rules, credit limits, and scheduling implications depending on type.</div>
+      </div>
+    </div>
+    <p>Off Plan work comes in three types, each with different implications for your plan and your credits:</p>
+
+    <!-- REVISIONS -->
+    <div style="border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:12px;">
+      <div style="background:var(--amber-s);border-bottom:1px solid var(--border);padding:14px 18px;display:flex;align-items:center;gap:12px;">
+        <div style="flex:1;">
+          <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);margin-bottom:3px;">Off Plan · Type 1 · Most common</div>
+          <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--ink);">Revisions &amp; Supplementary Work</div>
+        </div>
+      </div>
+      <div style="padding:14px 18px;font-size:13.5px;color:var(--ink2);line-height:1.65;">
+        <p style="margin-bottom:10px;">Small corrections to delivered work, or smaller additional items that sit alongside your plan — without disrupting it. <strong>Revisions run concurrently with your existing scheduled work and cause no disruption to your plan whatsoever.</strong></p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div>
+            <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px;">Scheduling</div>
+            <div style="font-size:12.5px;color:var(--ink2);line-height:1.6;">
+              ✅ By 7th — guaranteed completion this month<br>
+              ☑️ 7th–15th — likely but not guaranteed<br>
+              ❌ After 15th — best effort; may start next month
+            </div>
+          </div>
+          <div>
+            <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px;">Payment — one method only, never mixed</div>
+            <div style="font-size:12.5px;color:var(--ink2);line-height:1.6;">
+              🪙 Current plan credits, OR<br>
+              📈 Plan upgrade for more credits (ideally requested by 7th for this month*), OR<br>
+              🏦 Use from your next quarter's allocation (if credits exhausted), OR<br>
+              💳 Paid separately at your contracted discount rate via the existing GoCardless/FreeAgent bank debit
+            </div>
+          </div>
+        </div>
+        <div style="background:var(--surface2);border-radius:4px;padding:10px 12px;font-size:12.5px;color:var(--ink3);">✅ <strong>No disruption to your quarterly plan</strong> — On Plan work continues as normal alongside any revision.</div>
+        <div style="margin-top:8px;font-size:11px;color:var(--ink4);">* <a href="https://info.digiful.io/schedule-e-service-flow-cient-guide-html" style="color:var(--ink4);text-decoration:underline;font-weight:400;">See Schedule E for upgrade/downgrade terms.</a> There are limits to the number of times you can upgrade and downgrade.</div>
+      </div>
+    </div>
+
+    <!-- EMERGENCY -->
+    <div style="border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:12px;">
+      <div style="background:var(--red-s);border-bottom:1px solid var(--border);padding:14px 18px;">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:3px;">Off Plan · Type 2 · Less common</div>
+        <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--ink);">Emergency Work</div>
+      </div>
+      <div style="padding:14px 18px;font-size:13.5px;color:var(--ink2);line-height:1.65;">
+        <p style="margin-bottom:10px;">Genuinely urgent work that needs to happen as soon as possible — something that can't wait until next quarter. Emergency work is scheduled at the earliest opportunity within the same rules as all off-plan requests.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div>
+            <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px;">Scheduling</div>
+            <div style="font-size:12.5px;color:var(--ink2);line-height:1.6;">
+              ✅ By 7th — guaranteed completion this month<br>
+              ☑️ 7th–15th — likely but not guaranteed<br>
+              ❌ After 15th — best effort; may start next month
+            </div>
+          </div>
+          <div>
+            <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px;">Payment — one method only, never mixed</div>
+            <div style="font-size:12.5px;color:var(--ink2);line-height:1.6;">
+              🪙 Current plan credits (up to 2× monthly allocation), OR<br>
+              📈 Plan upgrade for more credits (ideally requested by 7th for this month*), OR<br>
+              💳 Paid separately at your contracted discount rate via the existing GoCardless/FreeAgent bank debit
+            </div>
+          </div>
+        </div>
+        <div style="background:var(--red-s);border-radius:4px;padding:10px 12px;font-size:12.5px;color:var(--ink2);">⚠️ <strong>Disrupts your quarterly plan.</strong> Emergency work pauses your scheduled On Plan services — they go On Hold. Paused work does not restart automatically. Because your circumstances have likely changed, the full quarter is re-evaluated: all remaining planned months will need to be re-requested to keep everything authorised and properly scheduled.</div>
+        <div style="margin-top:8px;font-size:11px;color:var(--ink4);">* <a href="https://info.digiful.io/schedule-e-service-flow-cient-guide-html" style="color:var(--ink4);text-decoration:underline;font-weight:400;">See Schedule E for upgrade/downgrade terms.</a> There are limits to the number of times you can upgrade and downgrade.</div>
+      </div>
+    </div>
+
+    <!-- PRIORITY -->
+    <div style="border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:12px;">
+      <div style="background:var(--blue-s);border-bottom:1px solid var(--border);padding:14px 18px;">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:3px;">Off Plan · Type 3 · Least common</div>
+        <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--ink);">Priority Work</div>
+      </div>
+      <div style="padding:14px 18px;font-size:13.5px;color:var(--ink2);line-height:1.65;">
+        <p style="margin-bottom:10px;">Important work that needs doing but isn't quite an emergency — it can be scheduled into the current or a future month. The same scheduling rules apply as emergency work, and it carries the same plan disruption implications.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div>
+            <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px;">Scheduling</div>
+            <div style="font-size:12.5px;color:var(--ink2);line-height:1.6;">
+              ✅ By 7th — guaranteed completion this month<br>
+              ☑️ 7th–15th — likely but not guaranteed<br>
+              ❌ After 15th — best effort; may start next month
+            </div>
+          </div>
+          <div>
+            <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px;">Payment — one method only, never mixed</div>
+            <div style="font-size:12.5px;color:var(--ink2);line-height:1.6;">
+              🪙 Current plan credits (up to 2× monthly allocation), OR<br>
+              📈 Plan upgrade for more credits (ideally requested by 7th for this month*), OR<br>
+              💳 Paid separately at your contracted discount rate via the existing GoCardless/FreeAgent bank debit
+            </div>
+          </div>
+        </div>
+        <div style="background:var(--red-s);border-radius:4px;padding:10px 12px;font-size:12.5px;color:var(--ink2);margin-bottom:8px;">⚠️ <strong>Disrupts your quarterly plan</strong> in the same way as emergency work. Scheduled On Plan services are paused. All remaining planned months need to be re-requested once the priority work is resolved.</div>
+        <div style="background:var(--blue-s);border-radius:4px;padding:10px 12px;font-size:12.5px;color:var(--ink2);margin-bottom:8px;">💡 <strong>Our strong recommendation:</strong> if you're in Month 2 or 3 of your quarter and the work isn't genuinely urgent, it's almost always better to wait for your quarterly review and put it on your next plan properly. You avoid disrupting what's already in progress, and the work gets the attention it deserves. You're still free to request it as Priority work — this is just our advice.</div>
+        <div style="font-size:11px;color:var(--ink4);">* <a href="https://info.digiful.io/schedule-e-service-flow-cient-guide-html" style="color:var(--ink4);text-decoration:underline;font-weight:400;">See Schedule E for upgrade/downgrade terms.</a> There are limits to the number of times you can upgrade and downgrade.</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="credit-rules" class="sub">
+    <div class="sub-title">Credit Rules — The Short Version</div>
+    <p>A few rules apply across all work types. The full detail is in your contract and Schedule E — this is the plain-English summary.</p>
+    <div class="limit-grid">
+      <div class="limit-card">
+        <div class="lc-title">Monthly credits</div>
+        <div class="lc-val">e.g. 150 / month</div>
+        <div class="lc-desc">Arrive on the 1st. Do not carry over — each month is a fresh start.</div>
+      </div>
+      <div class="limit-card">
+        <div class="lc-title">Off Plan credit limit</div>
+        <div class="lc-val">Max 2× monthly</div>
+        <div class="lc-desc">Emergency and priority work is capped at twice your monthly allocation (e.g. 300 for a 150/month plan). Revisions have a separate, lower limit.</div>
+      </div>
+      <div class="limit-card">
+        <div class="lc-title">Revision — next quarter</div>
+        <div class="lc-val">1 month or £200</div>
+        <div class="lc-desc">You can use from your next quarter's allocation for revisions — maximum of 200 credits or £200 if paid separately.</div>
+      </div>
+      <div class="limit-card">
+        <div class="lc-title">Payment method</div>
+        <div class="lc-val">One method only</div>
+        <div class="lc-desc">Credits or separate payment — never a mix within the same request. See your contract for your specific discount rate on paid work.</div>
+      </div>
+    </div>
+    <div class="callout c-amber"><b>No rollover</b>Credits do not accumulate. If you don't use your 150 credits in March, they don't appear in April. April always starts with your standard monthly allocation and nothing more. This is intentional — it keeps your balance simple and your planning clear.</div>
+    <div class="callout" style="background:var(--surface2);border-color:var(--border2);border-left:3px solid var(--border2);"><b style="display:block;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-weight:500;margin-bottom:5px;color:var(--ink3);">Credits cannot be purchased separately</b>Purchasing individual credits outside your retainer would create complexity that ultimately costs you more money. If we allowed à la carte credit purchases, we'd need to manage custom credit arrangements for multiple clients — which means higher overhead costs that get passed back to you in higher prices. Instead, we keep it simple and fair: options to upgrade for best value, pay separately with a discount, or in limited cases use from a future quarter.<br><br>Research has shown that clients who stay on retainers, upgrade strategically, and build long-term relationships get dramatically better results than clients who treat it transactionally. The model only works if we can count on stable, predictable relationships. In return, you get better value, dedicated capacity, and results that compound over time. It's a genuine win-win.</div>
+    <div class="callout c-red"><b>Plan upgrades &amp; downgrades</b>If you need more credits and are considering a plan upgrade, the same scheduling rules apply — upgrading by the 7th is the only way to guarantee it takes effect this month. It may still be possible to upgrade your plan if you request it by the 15th, but this is not guaranteed. Frequency of upgrades and downgrades is governed by Schedule E of your contract to ensure stability for both parties.</div>
+  </div>
+</div>
+
+<!-- §02 QOF -->
+<div class="sec" id="qof">
+  <div class="sec-hd"><span class="sec-num">§ 02</span><span class="sec-title">Your Quarterly Order Form</span></div>
+  <p>At the end of each quarter we'll meet and discuss your priorities, presenting and agreeing in principle the next quarter's work. Following our meeting, at the start of the new quarter, you'll receive access to your <strong>Quarterly Order Form</strong> — a simple form in your client portal that lets you formally authorise which service/s you'd like for the next three months.</p>
+  <p>This form is the main way your planned (ON PLAN) work gets agreed and scheduled. Once you've submitted it, we receive your selections automatically and schedule your work. No back-and-forth needed.</p>
+
+  <div class="callout c-green"><b>Quarterly Order Form is live now</b>Your Quarterly Order Form is already available in your client portal. You don't need to wait — when a new quarter opens, your form will appear ready to complete.</div>
+
+  <div id="qof-how" class="sub" style="margin-top:24px;">
+    <div class="sub-title">How to Use the Quarterly Order Form</div>
+    <div class="qof-flow">
+      <div class="qof-step"><div class="qof-icon">📋</div><div class="qof-body"><div class="qof-title">Open the form in your portal</div><div class="qof-desc">Your Quarterly Order Form appears in your portal space at the start of each quarter. It's personalised to your plan — only services available to you will show up.</div></div></div>
+      <div class="qof-step"><div class="qof-icon">💡</div><div class="qof-body"><div class="qof-title">Review the suggested strategies (optional)</div><div class="qof-desc">We often suggest named strategies — for example, "Strategy A: Google Ads Focus" or "Strategy B: SEO &amp; Content". Each strategy groups services together by theme and suggests which month to schedule each one. You're not locked in to a strategy — it's just a starting point to help you decide.</div></div></div>
+      <div class="qof-step"><div class="qof-icon">🗓️</div><div class="qof-body"><div class="qof-title">Select your services</div><div class="qof-desc">Generally for each month in the quarter, you'll select one service from the dropdown.  Bigger services may span multiple months, depending on the credit total and your plan. Each service shows its credit cost. The form keeps a running total so you can see how much you're spending.  The key is stay within your <strong>quarter credit total</strong>.  Some services show a ✨ bonus — this means the credit cost is reduced by that amount for this selection.</div></div></div>
+      <div class="qof-step"><div class="qof-icon">✅</div><div class="qof-body"><div class="qof-title">Check your total and submit</div><div class="qof-desc">When you're happy with your selections, tick the authorisation checkbox and click Submit. You'll see a confirmation message on screen and you'll receive a confirmation in your portal. We'll have your selections instantly and your work is scheduled automatically.</div></div></div>
+    </div>
+
+    <div class="callout c-amber"><b>Submission deadline</b>Each quarter has a deadline for submitting your form — usually the 7th of the first month of the quarter. This is shown on the form itself. Submitting early means your first month's work can start on time. If you miss the deadline, contact us in the portal and we'll do our best to accommodate you.</div>
+
+    <div class="callout c-blue"><b>Bonus credits</b> From time to time some services on the form carry one time bonus credits — shown as a ✨ next to the service. This means that service costs you fewer net credits than the standard price (for this quarter only). For example, a service might cost 200 credits normally, but with a 50-credit bonus your net cost is only 150 credits. The form handles this automatically in your total — no action needed from you.</div>
+
+    <p>If you need to change your selections after submitting, you can resubmit the form. Please contact us via the portal to confirm your choices are from the latest submission so we can void any previous ones.</p>
+  </div>
+
+  <div id="quarterly-review" class="sub">
+    <div class="sub-title">Quarterly Review Meetings</div>
+    <p>Every three months we have a review meeting — this may be in person or via video call depending on what works best.</p>
+    <p>Before your review meeting, it's worth thinking about: what's working well, what you'd like more or less of, and any new priorities or projects coming up. We'll also look at your credit usage together so there are no surprises.</p>
+    <p>After the meeting, we'll confirm your Quarterly Order Form for the new quarter and you'll be able to see everything that's planned. We'll also discuss whether your current plan level is still the right fit, and whether any of your perks or bundles need updating.</p>
+  </div>
+</div>
+
+<!-- §03 TRACKING -->
+<div class="sec" id="tracking">
+  <div class="sec-hd"><span class="sec-num">§ 03</span><span class="sec-title">Tracking Your Work &amp; the Monthly Reset</span></div>
+
+  <div class="sub">
+    <div class="sub-title">What Happens to Each Piece of Work</div>
+    <p>Every service you request goes through a simple journey. Here's what each status means when you see it:</p>
+    <div class="status-grid">
+      <div class="status-item"><span class="status-pill sp-pending">Pending Approval</span><div class="status-text"><strong>We're reviewing your request.</strong> Credits not yet affected. Usually resolved within a few hours.</div></div>
+      <div class="status-item"><span class="status-pill sp-approved">Approved</span><div class="status-text"><strong>Request confirmed.</strong> Credits are reserved (set aside) but not yet spent. Work hasn't started yet.</div></div>
+      <div class="status-item"><span class="status-pill sp-progress">In Progress</span><div class="status-text"><strong>We're actively working on this.</strong> Credits are spent at this point. Work has begun.</div></div>
+      <div class="status-item"><span class="status-pill sp-completed">Completed</span><div class="status-text"><strong>Delivered and finished.</strong> Credits were spent when work started. You should have received the deliverable.</div></div>
+      <div class="status-item"><span class="status-pill sp-hold">On Hold</span><div class="status-text"><strong>Paused</strong> — usually because urgent work came in that needed to take priority and these credits were spent elsewhere. Work can resume once re-requested.</div></div>
+    </div>
+    <div class="callout c-blue"><b>When are credits actually spent?</b>Credits are only deducted when work moves to "In Progress".</div>
+  </div>
+
+  <div id="monthly-reset" class="sub">
+    <div class="sub-title">What Happens on the 1st of Each Month</div>
+    <p>On the 1st of every month, your new credit allocation arrives automatically. You'll see your new balance updated in your portal. Here's what that looks like:</p>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:16px;">
+      <div style="background:var(--surface2);padding:10px 14px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);border-bottom:1px solid var(--border);">What happens each month</div>
+      <div style="display:grid;grid-template-columns:80px 1fr;gap:0;">
+        <div style="background:var(--ink);color:#f5f3ef;border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:11px 13px;font-family:'DM Mono',monospace;font-size:12px;display:flex;align-items:flex-start;">1st</div>
+        <div style="background:var(--green-s);border-bottom:1px solid var(--border);padding:11px 15px;font-size:13.5px;color:var(--ink2);line-height:1.55;"><strong>Your new credits arrive.</strong> Your monthly allocation is added to your balance and visible in your portal.</div>
+        <div style="background:var(--surface2);border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:11px 13px;font-family:'DM Mono',monospace;font-size:12px;display:flex;align-items:flex-start;">1st–7th</div>
+        <div style="background:var(--surface);border-bottom:1px solid var(--border);padding:11px 15px;font-size:13.5px;color:var(--ink2);line-height:1.55;"><strong>Priority window for new requests.</strong> The 7th is our soft deadline for new monthly requests — submitting in this window gives us the best chance of fitting everything in this month.</div>
+        <div style="background:var(--surface2);border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:11px 13px;font-family:'DM Mono',monospace;font-size:12px;display:flex;align-items:flex-start;">Mid</div>
+        <div style="background:var(--surface);border-bottom:1px solid var(--border);padding:11px 15px;font-size:13.5px;color:var(--ink2);line-height:1.55;"><strong>Work progresses.</strong> Scheduled services move through Approved → In Progress → Completed. You can view current work in the reports area of the portal.</div>
+        <div style="background:var(--surface2);border-right:1px solid var(--border);padding:11px 13px;font-family:'DM Mono',monospace;font-size:12px;display:flex;align-items:flex-start;">Month end</div>
+        <div style="background:var(--surface);padding:11px 15px;font-size:13.5px;color:var(--ink2);line-height:1.55;"><strong>Invoice for the month.</strong> An invoice covering the month's completed services is generated and sent. Your next credit load arrives on the 1st of the new month.</div>
+      </div>
+    </div>
+    <div class="callout c-amber"><b>After the 7th — what it means in practice</b>We can still accept new requests after the 7th, but the window is narrowing. Between the 7th and 15th we'll do our best to complete work this month, but it's not guaranteed. After the 15th, any new request is a best-effort situation — there's a good chance it will need to start the following month. If something is genuinely urgent, let us know as soon as possible whatever the date.</div>
+  </div>
+</div>
+
+<!-- §04 SCENARIOS -->
+<div class="sec" id="sc-emergency">
+  <div class="sec-hd"><span class="sec-num">§ 04</span><span class="sec-title">Common Scenarios</span></div>
+
+  <div class="sub">
+    <div class="sub-title">Emergency Work</div>
+    <div class="scenario">
+      <div class="sc-hd" onclick="toggleSc(this)"><div><div class="sc-label">Off Plan · Emergency</div><div class="sc-title">Something genuinely urgent has come up outside your quarterly plan</div></div><div class="sc-toggle">⌄</div></div>
+      <div class="sc-body">
+        <div class="sc-intro">You need work done urgently — something that can't wait until next quarter's review and needs to be scheduled as soon as possible.</div>
+        <div class="sc-step"><div class="sc-n">01</div><div class="sc-c"><strong>Use the emergency work request form in your portal</strong> as soon as you know — timing matters. The earlier we hear from you, the more options we have.
+          <div class="sc-note">
+            ✅ <strong>By 7th:</strong> Completion this month guaranteed (subject to credit availability)<br>
+            ☑️ <strong>7th–15th:</strong> We'll do our best to complete this month, but it's not guaranteed<br>
+            ❌ <strong>After 15th:</strong> Best effort — may need to start next month
+          </div>
+        </div></div>
+        <div class="sc-step"><div class="sc-n">02</div><div class="sc-c"><strong>We'll assess the request and your credits</strong> and come back to you quickly. Emergency work can be covered in one of these ways — one method only, never a mix:
+          <div class="sc-note">
+            🪙 <strong>Current plan credits</strong> — up to a maximum of 2× your monthly allocation (e.g. 300 credits for a 150/month plan)<br><br>
+            📈 <strong>Plan upgrade</strong> — gives you more credits to cover higher-cost services. Must be requested by the 7th for this month. Upgrade and downgrade frequency is governed by Schedule E of your contract.<br><br>
+            💳 <strong>Separate payment</strong> — at your contracted discount rate, collected via your GoCardless/FreeAgent mandate. We'll send the invoice after payment is processed. Work begins once payment clears.
+          </div>
+        </div></div>
+        <div class="sc-step"><div class="sc-n">03</div><div class="sc-c"><strong>Your quarterly plan will be disrupted.</strong> Emergency work pauses your scheduled On Plan services — they move to On Hold. Your credits for those services are not lost, but the work does not restart automatically.
+          <div class="sc-note">Because an emergency usually means your situation has changed, the entire remaining quarter is treated as needing a fresh look. All paused months will need to be re-requested — this keeps everything properly authorised and scheduled for both sides. We'll guide you through this once the emergency work is resolved.</div>
+        </div></div>
+        <div class="sc-step"><div class="sc-n">04</div><div class="sc-c"><strong>We'll confirm everything via the portal</strong> — what's been approved, when it starts, and which planned services are on hold.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="sc-priority" class="sub">
+    <div class="sub-title">Priority Work</div>
+    <div class="scenario">
+      <div class="sc-hd" onclick="toggleSc(this)"><div><div class="sc-label">Off Plan · Priority</div><div class="sc-title">Important work has come up that wasn't in your plan — but it's not an emergency</div></div><div class="sc-toggle">⌄</div></div>
+      <div class="sc-body">
+        <div class="sc-intro">You need something done that wasn't part of your quarterly plan, and it's important — but it doesn't need to happen today. It can be scheduled into the current or a coming month.</div>
+        <div class="sc-step"><div class="sc-n">01</div><div class="sc-c"><strong>Before requesting, consider timing.</strong> If you're already in Month 2 or 3 of your quarter and the work isn't genuinely urgent, <strong>we'd strongly recommend waiting for your quarterly review and adding it to your next plan properly.</strong> This avoids disrupting what's already scheduled and ensures the work gets properly planned attention. You're free to request it as Priority work regardless — this is simply our advice.
+        </div></div>
+        <div class="sc-step"><div class="sc-n">02</div><div class="sc-c"><strong>Use the priority work request form in your portal</strong> if you'd like to proceed. The same scheduling rules apply as emergency work:
+          <div class="sc-note">
+            ✅ <strong>By 7th:</strong> Completion this month guaranteed (subject to credit availability)<br>
+            ☑️ <strong>7th–15th:</strong> Likely but not guaranteed this month<br>
+            ❌ <strong>After 15th:</strong> Best effort — may need to start next month
+          </div>
+        </div></div>
+        <div class="sc-step"><div class="sc-n">03</div><div class="sc-c"><strong>Payment works the same as emergency work</strong> — one method only, never a mix:
+          <div class="sc-note">
+            🪙 Current plan credits (up to 2× monthly allocation), OR<br>
+            📈 Plan upgrade for more credits (by 7th for this month; see Schedule E), OR<br>
+            💳 Separate payment at your contracted discount rate via GoCardless/FreeAgent
+          </div>
+        </div></div>
+        <div class="sc-step"><div class="sc-n">04</div><div class="sc-c"><strong>Your quarterly plan will be disrupted</strong> in the same way as emergency work. Scheduled On Plan services go On Hold, and the remaining quarter will need to be re-requested once the priority work is resolved. We'll help you work through this.<div class="sc-note">This is another reason why — unless it's time-sensitive — waiting for the quarterly review is usually the better route for non-emergency items.</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="sc-revision" class="sub">
+    <div class="sub-title">Revisions &amp; Supplementary Work</div>
+    <div class="scenario">
+      <div class="sc-hd" onclick="toggleSc(this)"><div><div class="sc-label">Off Plan · Revision</div><div class="sc-title">You need a small correction or a supplementary item alongside your existing plan</div></div><div class="sc-toggle">⌄</div></div>
+      <div class="sc-body">
+        <div class="sc-intro">Revisions cover two things: corrections to work we've already delivered, and smaller supplementary items that sit alongside your plan without disrupting it. This is the best type of Off Plan work — no disruption, no quarter reset.</div>
+        <div class="sc-step"><div class="sc-n">01</div><div class="sc-c"><strong>Revisions are the right route for:</strong>
+          <div class="sc-note">
+            <strong>Corrections:</strong> Tweaking or adjusting something already delivered — a colour, a line of copy, a data point in a report.<br><br>
+            <strong>Supplementary additions:</strong> Adding a smaller item that runs alongside your plan. For example, your plan includes website copy — you.d also like a few text amends to a landing page added on top. This can be handled as a revision with zero disruption to your existing schedule.
+          </div>
+        </div></div>
+        <div class="sc-step"><div class="sc-n">02</div><div class="sc-c"><strong>Use the revision request form in your portal.</strong> Revisions run concurrently with your On Plan work — your planned services continue completely undisturbed.
+          <div class="sc-note">
+            ✅ <strong>By 7th:</strong> Completion this month guaranteed<br>
+            ☑️ <strong>7th–15th:</strong> Likely but not guaranteed this month<br>
+            ❌ <strong>After 15th:</strong> Best effort — may need to start next month
+          </div>
+        </div></div>
+        <div class="sc-step"><div class="sc-n">03</div><div class="sc-c"><strong>Payment — one method only, never a mix:</strong>
+          <div class="sc-note">
+            🪙 <strong>Current plan credits</strong> — if you have enough in your balance this month<br><br>
+            🗓️ <strong>Use from your next quarter's allocation</strong> — if your credits are exhausted. Maximum of 200 credits, or £200 if paying separately. This amount is deducted from your next quarter's available credits. Not available if your retainer is in a notice period.<br><br>
+            💳 <strong>Separate payment</strong> — at your contracted discount rate, collected via GoCardless/FreeAgent. Credits are always the most cost-effective option, but paid work at your contracted rate is available when needed.
+          </div>
+        </div></div>
+        <div class="sc-step"><div class="sc-n">04</div><div class="sc-c"><strong>We'll confirm the plan with you</strong> — what the revision covers, when it'll be done, and the credit or payment arrangement. ✅ Your quarterly plan remains completely unaffected.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="sc-break" class="sub">
+    <div class="sub-title">Taking a Retainer Break</div>
+    <div class="scenario">
+      <div class="sc-hd" onclick="toggleSc(this)"><div><div class="sc-label">Scenario</div><div class="sc-title">You need to pause your retainer for a month</div></div><div class="sc-toggle">⌄</div></div>
+      <div class="sc-body">
+        <div class="sc-intro">Life gets busy. If you need to pause your retainer for a month, we can accommodate that — subject to your plan's break allowance and notice requirements.</div>
+        <div class="sc-step"><div class="sc-n">01</div><div class="sc-c"><strong>Check your eligibility before requesting:</strong>
+          <div class="sc-note">
+            Breaks are usually available after your first 6 months with us.<br>
+            Your contract will confirm the number of breaks per year.<br>
+            You need to give at least <strong>30 days' notice</strong> before the month you want to pause. For example, to pause May, you need to let us know by around 1st April.<br>
+            If you haven't met the notice period, contact us anyway — we can discuss whether an exception is possible.
+          </div>
+        </div></div>
+        <div class="sc-step"><div class="sc-n">02</div><div class="sc-c"><strong>Use the retainer break request form in your portal.</strong> Tell us which month you'd like to pause and any context that's helpful for us to know.</div></div>
+        <div class="sc-step"><div class="sc-n">03</div><div class="sc-c"><strong>We'll confirm and process your break.</strong> Any work planned for that month will be stood down, and that month's retainer fee will be refunded. We'll send you a portal confirmation listing everything that was stood down and what you're being refunded.</div></div>
+        <div class="sc-step"><div class="sc-n">04</div><div class="sc-c"><strong>Stood-down work does not automatically reschedule.</strong> When you return, we'll discuss what you need — either at your next quarterly review or by submitting a new request. Think of it as a fresh start for that month.</div></div>
+        <div class="sc-step"><div class="sc-n">05</div><div class="sc-c"><strong>When you return</strong>, your credits reload as normal on the 1st of your return month and you can submit new requests straight away.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="sc-cashpay" class="sub">
+    <div class="sub-title">Paying for Extra Work Outside Your Credits</div>
+    <div class="scenario">
+      <div class="sc-hd" onclick="toggleSc(this)"><div><div class="sc-label">Scenario</div><div class="sc-title">You want additional work that sits outside your retainer credits</div></div><div class="sc-toggle">⌄</div></div>
+      <div class="sc-body">
+        <div class="sc-intro">Sometimes you need something that goes beyond what your credits can cover — a one-off project, a large piece of work, or something that exceeds your emergency credit limit.</div>
+        <div class="sc-step"><div class="sc-n">01</div><div class="sc-c"><strong>Contact us using the relevant form in your portal</strong> and describe what you need. We'll work out the cost and confirm whether it can be handled as a separate payment.</div></div>
+        <div class="sc-step"><div class="sc-n">02</div><div class="sc-c"><strong>We'll provide you with a price.</strong> As a retainer client, your retainer client discount is specified in your contract.</div></div>
+        <div class="sc-step"><div class="sc-n">03</div><div class="sc-c"><strong>Payment is collected via your existing GoCardless/FreeAgent arrangement.</strong> We process the payment through your mandate and send you the invoice. Work begins after this process has been completed.<div class="sc-note">We require full payment before starting. No partial payments — the full amount needs to clear first.</div></div></div>
+        <div class="sc-step"><div class="sc-n">04</div><div class="sc-c"><strong>This work is tracked and delivered separately</strong> from your regular retainer services. It doesn't affect your monthly credit balance. You'll receive the same updates and quality of work as everything else we do for you.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="sc-balance" class="sub">
+    <div class="sub-title">Checking Your Credit Balance</div>
+    <div class="scenario">
+      <div class="sc-hd" onclick="toggleSc(this)"><div><div class="sc-label">Scenario</div><div class="sc-title">You want to know your current credit balance before requesting new work</div></div><div class="sc-toggle">⌄</div></div>
+      <div class="sc-body">
+        <div class="sc-intro">You want to know how much you have available before deciding what to request next.</div>
+        <div class="sc-step"><div class="sc-n">01</div><div class="sc-c"><strong>Right now:</strong> your balance information is available from us directly. Use the portal form to request a balance check and we'll come back to you with a full breakdown: your current balance, what's been reserved for scheduled work, and what's available for new requests.</div></div>
+        <div class="sc-step"><div class="sc-n">02</div><div class="sc-c"><strong>What we can tell you:</strong>
+          <div class="sc-note">
+            Credits received this month<br>
+            Credits used so far<br>
+            Credits reserved for upcoming scheduled work<br>
+            Credits available for new requests<br>
+            Your emergency work limit (2× monthly allocation)
+          </div>
+        </div></div>
+        <div class="sc-step"><div class="sc-n">03</div><div class="sc-c"><strong>Coming in a future portal update:</strong> your live credit balance will be visible directly in your client portal — updated in real time as work progresses and credits are spent or returned.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- §05 STATUS GUIDE -->
+<div class="sec" id="status-guide">
+  <div class="sec-hd"><span class="sec-num">§ 05</span><span class="sec-title">Quick Reference</span></div>
+
+  <div class="sub">
+    <div class="sub-title">Work Status — What Each One Means</div>
+    <table class="qr-table">
+      <thead><tr><th>Status</th><th>What It Means</th><th>Are Your Credits Affected?</th></tr></thead>
+      <tbody>
+        <tr><td><span class="status-pill sp-pending" style="font-size:11px;padding:3px 9px;border-radius:100px;font-family:'DM Mono',monospace;">Pending Approval</span></td><td>We're reviewing your request</td><td>No — credits untouched</td></tr>
+        <tr><td><span class="status-pill sp-approved" style="font-size:11px;padding:3px 9px;border-radius:100px;font-family:'DM Mono',monospace;">Approved</span></td><td>Confirmed — ready to start when scheduled</td><td>Credits reserved but not spent</td></tr>
+        <tr><td><span class="status-pill sp-progress" style="font-size:11px;padding:3px 9px;border-radius:100px;font-family:'DM Mono',monospace;">In Progress</span></td><td>We're actively working on this right now</td><td>Yes — credits deducted now</td></tr>
+        <tr><td><span class="status-pill sp-completed" style="font-size:11px;padding:3px 9px;border-radius:100px;font-family:'DM Mono',monospace;">Completed</span></td><td>Delivered and finished</td><td>Credits were spent at In Progress</td></tr>
+        <tr><td><span class="status-pill sp-hold" style="font-size:11px;padding:3px 9px;border-radius:100px;font-family:'DM Mono',monospace;">On Hold</span></td><td>Paused — usually because urgent work took priority</td><td>Credits likely used on a different service</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div id="key-dates" class="sub">
+    <div class="sub-title">Key Dates</div>
+    <table class="qr-table">
+      <thead><tr><th>Date</th><th>What Happens</th></tr></thead>
+      <tbody>
+        <tr><td style="font-family:'DM Mono',monospace;font-size:12px;white-space:nowrap;">1st of month</td><td>Your new monthly credits arrive automatically. Any invoice for the previous month is also generated.</td></tr>
+        <tr><td style="font-family:'DM Mono',monospace;font-size:12px;white-space:nowrap;">By 7th</td><td>✅ <strong>Guaranteed window.</strong> Any Off Plan request (revision, emergency, priority) submitted by the 7th is guaranteed to be completed this month, subject to credit availability.</td></tr>
+        <tr><td style="font-family:'DM Mono',monospace;font-size:12px;white-space:nowrap;">7th–15th</td><td>☑️ <strong>Likely window.</strong> We'll do our best to complete this month, but it's not guaranteed. Outcome depends on our capacity at the time.</td></tr>
+        <tr><td style="font-family:'DM Mono',monospace;font-size:12px;white-space:nowrap;">After 15th</td><td>❌ <strong>Best effort only.</strong> There's a good chance the work will need to start the following month. We'll always try to accommodate urgent situations.</td></tr>
+        <tr><td style="font-family:'DM Mono',monospace;font-size:12px;white-space:nowrap;">Every 3 months</td><td>Quarterly review meeting and new Quarterly Order Form. The QOF has its own deadline — usually the 7th of the first month of the new quarter.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sub">
+    <div class="sub-title">Credit Limits at a Glance</div>
+    <table class="qr-table">
+      <thead><tr><th>Type</th><th>Limit</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Monthly allocation</td><td>Your plan rate (e.g. 150 credits)</td><td>Arrives on the 1st. Does not carry over — each month is a fresh start.</td></tr>
+        <tr><td>Emergency &amp; Priority work</td><td>Max 2× monthly allocation</td><td>E.g. 300 credits for a 150/month plan. Beyond this: separate payment or plan upgrade (see Schedule E).</td></tr>
+        <tr><td>Revision — next quarter allocation</td><td>Maximum 200 credits or £200 if paying separately.</td><td>Only for revisions. Deducted from your next quarter's available credits. Not available if your retainer is in a notice period.</td></tr>
+        <tr><td>Payment method</td><td>One method per request</td><td>Credits or separate payment — never mixed within the same request. See your contract for your specific discount rate on paid work.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- §06 GETTING HELP -->
+<div class="sec" id="get-help">
+  <div class="sec-hd"><span class="sec-num">§ 06</span><span class="sec-title">Getting Help</span></div>
+  <p>Most things can be handled through the forms in your client portal. Here's how to get the right kind of help:</p>
+
+  <div class="contact-grid">
+    <div class="contact-card">
+      <div class="cc-label cc-form">Best for most things</div>
+      <div class="cc-title">Use the relevant form in your portal</div>
+      <div class="cc-desc">For all requests — urgent work, breaks, balance checks, extra work, revisions. There's a form for each type of request and it gets things to us quickly.</div>
+    </div>
+    <div class="contact-card">
+      <div class="cc-label cc-bot">General questions</div>
+      <div class="cc-title">Use the AI assistant in your portal</div>
+      <div class="cc-desc">Good for general how-to questions about your retainer — key dates, how credits work, what the different work types are. The assistant can't access your specific account info (balance, history etc).</div>
+    </div>
+    <div class="contact-card">
+      <div class="cc-label cc-email">If needed</div>
+      <div class="cc-title">Send a portal message</div>
+      <div class="cc-desc">For anything that doesn't fit a form, send us a message directly in your portal. We aim to reply within 48 hours (office hours).</div>
+    </div>
+  </div>
+
+  <div class="callout c-blue"><b>What the AI assistant can and can't do</b>The AI assistant in your portal is great for general questions about how your retainer works — things like "when do my credits arrive?" or "what's the difference between planned and emergency work?". It can't tell you your specific balance, what services you had last month, or any information specific to your account. For those, use the balance check form.</div>
+
+  <div class="callout c-green"><b>Policy questions</b>If you have questions about what's included in your retainer, intellectual property, termination terms, or anything legal — please refer to your retainer contract and any accompanying schedules.</div>
+
+  <div class="sub" style="margin-top:32px;">
+    <div class="sub-title">A Note on This Guide</div>
+    <p>ServiceFlow is growing. We add new features and improve things regularly. When something significant changes, we'll let you know via the portal and this guide will be updated. The version number and date at the top of this guide always shows the current version.</p>
+    <p>If something in your retainer experience isn't covered here, or if anything is unclear, please let us know via your portal. Your questions help us improve this guide.</p>
+  </div>
+</div>
+
+</div><!-- /main -->
+<script>
+function toggleSc(hd){const s=hd.closest('.scenario');s.classList.toggle('open');}
+function toggleMenu(){document.getElementById('sidebar').classList.toggle('open');}
+document.addEventListener('click',function(e){
+  const s=document.getElementById('sidebar');const t=document.querySelector('.menu-toggle');
+  if(s.classList.contains('open')&&!s.contains(e.target)&&e.target!==t)s.classList.remove('open');
+});
+const navAs=document.querySelectorAll('.nav-a[href^="#"]');
+const obs=new IntersectionObserver((entries)=>{
+  entries.forEach(en=>{if(en.isIntersecting){const id=en.target.id;navAs.forEach(a=>{a.classList.remove('active');if(a.getAttribute('href')==='#'+id)a.classList.add('active');});}});
+},{rootMargin:'-15% 0px -75% 0px',threshold:0});
+document.querySelectorAll('[id]').forEach(el=>{if(el.id)obs.observe(el);});
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',function(e){const t=document.querySelector(this.getAttribute('href'));
+  if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth',block:'start'});document.getElementById('sidebar').classList.remove('open');}});
+});
+window.addEventListener('beforeprint',()=>{document.querySelectorAll('.scenario').forEach(s=>s.classList.add('open'));});
+</script>
+</body>
+</html>
