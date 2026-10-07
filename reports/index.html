@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Your Reports | Digiful</title>
+<link rel="stylesheet" href="assets/css/report.css">
+</head>
+<body>
+<div class="dummy" id="demoBanner" hidden>DEMO MODE: sample data. Remove <code>?demo=1</code> from the address to use live data.</div>
+<div class="page">
+  <header class="header">
+    <div class="brand">Digiful</div>
+    <h1>Your reports</h1>
+    <div class="subtitle" id="clientName">&nbsp;</div>
+    <div class="header-meta">
+      <div class="meta-item">Reports available<span id="metaTotal">-</span></div>
+      <div class="meta-item">Latest<span id="metaLatest">-</span></div>
+    </div>
+  </header>
+
+  <main class="content">
+    <div class="filters" role="group" aria-label="Filter reports">
+      <div class="field"><label for="yearSel">Year</label><select id="yearSel" disabled></select></div>
+      <div class="field"><label for="qSel">Quarter</label>
+        <select id="qSel" disabled>
+          <option value="">All quarters</option><option>Q1</option><option>Q2</option><option>Q3</option><option>Q4</option>
+        </select></div>
+      <div class="count" id="count" aria-live="polite"></div>
+    </div>
+    <div id="list"><div class="loading">Loading your reports&hellip;</div></div>
+  </main>
+
+  <footer class="footer"><div>Digiful</div><div>Reports are private to your organisation</div></footer>
+</div>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/demo-data.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(function () {
+  var R = window.Reports, el = R.el;
+  if (R.isDemo) document.getElementById("demoBanner").hidden = false;
+  var list = document.getElementById("list"), yearSel = document.getElementById("yearSel"), qSel = document.getElementById("qSel");
+  var rows = [];
+
+  function fail(err) {
+    list.textContent = "";
+    list.appendChild(el("div", "msg", R.message(err)));
+  }
+
+  R.loadList().then(function (data) {
+    rows = data || [];
+    if (!rows.length) { list.textContent = ""; list.appendChild(el("div", "msg", "No reports are available yet. We'll let you know as soon as the first one is ready.")); return; }
+    document.getElementById("clientName").textContent = rows[0].client_name;
+    document.title = "Your reports | " + rows[0].client_name;
+    document.getElementById("metaTotal").textContent = rows.length;
+    var latest = rows.reduce(function (a, r) { return r.period_end > a ? r.period_end : a; }, "");
+    document.getElementById("metaLatest").textContent = R.fmtDate(latest);
+
+    var years = Array.from(new Set(rows.map(function (r) { return R.quarter(r).year; }))).sort().reverse();
+    var all = el("option", null, "All years"); all.value = ""; yearSel.appendChild(all);
+    years.forEach(function (y) { var o = el("option", null, y); o.value = y; yearSel.appendChild(o); });
+    var wantY = R.params.get("y"), wantQ = R.params.get("q");
+    yearSel.value = (wantY && years.indexOf(wantY) >= 0) ? wantY : years[0];   /* default: latest year */
+    if (wantQ && /^Q[1-4]$/.test(wantQ)) qSel.value = wantQ;
+    yearSel.disabled = qSel.disabled = false;
+    render();
+  }).catch(fail);
+
+  function render() {
+    var y = yearSel.value, q = qSel.value, anchor = (location.hash.match(/^#q-(\d+)$/) || [])[1];
+    var shown = rows.filter(function (r) { var Q = R.quarter(r); return (!y || Q.year === y) && (!q || Q.q === q); });
+    list.textContent = "";
+    document.getElementById("count").textContent = shown.length + (shown.length === 1 ? " report" : " reports");
+    if (!shown.length) { list.appendChild(el("div", "msg", "No reports for this selection. Try another year or quarter.")); return; }
+
+    var groups = [], byKey = {};
+    shown.forEach(function (r) {
+      var Q = R.quarter(r);
+      if (!byKey[Q.key]) { byKey[Q.key] = { Q: Q, rows: [] }; groups.push(byKey[Q.key]); }
+      byKey[Q.key].rows.push(r);
+    });
+    var anchorShown = anchor && byKey[anchor];
+    groups.forEach(function (g, i) {
+      var d = el("details", "qgroup"); d.id = "q-" + g.Q.key;
+      d.open = anchorShown ? (g.Q.key === anchor) : (i === 0);   /* back link opens its own quarter; otherwise the newest */
+      var s = el("summary");
+      s.appendChild(el("h2", null, g.Q.label)); s.appendChild(el("span", "range", g.Q.range));
+      s.appendChild(el("span", "n", g.rows.length + (g.rows.length === 1 ? " report" : " reports")));
+      d.appendChild(s);
+      var body = el("div", "qbody");
+      g.rows.forEach(function (r) {
+        var a = el("a", "rcard"); a.href = R.link("report.html", { id: r.report_instance_id });
+        var m = R.month(r.service_month);
+        if (m) { var mc = el("div", "mcard"); mc.setAttribute("aria-label", "Month: " + m.text); mc.appendChild(el("b", null, m.mon)); mc.appendChild(el("span", null, m.yr)); a.appendChild(mc); }
+        var main = el("div", "main"), t = el("div", "t", r.title);
+        if (r.report_label) t.appendChild(el("span", "pill", r.report_label));
+        main.appendChild(t); a.appendChild(main); a.appendChild(el("span", "go", "View report ›"));
+        body.appendChild(a);
+      });
+      d.appendChild(body); list.appendChild(d);
+    });
+    if (anchorShown) {
+      var target = document.getElementById("q-" + anchor);
+      target.scrollIntoView({ block: "start" }); target.classList.add("flash");
+    }
+  }
+  yearSel.addEventListener("change", function () { history.replaceState(null, "", location.pathname + location.search); render(); });
+  qSel.addEventListener("change", function () { history.replaceState(null, "", location.pathname + location.search); render(); });
+})();
+</script>
+</body>
+</html>

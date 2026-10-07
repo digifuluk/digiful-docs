@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Report | Digiful</title>
+<link rel="stylesheet" href="assets/css/report.css">
+</head>
+<body>
+
+<nav class="topnav" aria-label="Report navigation">
+  <div class="topnav-in">
+    <a class="navlink" id="navBack" href="index.html">&#8249; Back to list</a>
+    <a class="navlink" id="navPrev" href="#" hidden><span>&#8249; Prev<span class="long">ious</span><small id="prevTitle"></small></span></a>
+    <a class="navlink" id="navNext" href="#" hidden><span>Next<span class="long"> report</span> &#8250;<small id="nextTitle"></small></span></a>
+    <span class="spacer"></span>
+    <button class="dl-btn" type="button" id="pdfBtn" hidden>&#8595; <span class="long">Download </span>PDF</button>
+  </div>
+</nav>
+<div class="dummy" id="demoBanner" hidden>DEMO MODE: sample data. Remove <code>?demo=1</code> from the address to use live data.</div>
+
+<div class="page">
+  <div id="state"><div class="loading">Loading your report&hellip;</div></div>
+
+  <article id="report" hidden>
+    <header class="header">
+      <div class="brand">Digiful</div>
+      <h1 id="rTitle"></h1>
+      <div class="subtitle" id="rSub"></div>
+      <div class="header-meta" id="rMeta"></div>
+    </header>
+    <main class="content">
+      <div class="ledger" id="ledger" aria-label="Delivery details"></div>
+      <nav class="toc" aria-label="Contents"><h2>Contents</h2><ol id="tocList"></ol></nav>
+      <div id="body"></div>
+    </main>
+    <footer class="footer"><div id="fLeft"></div><div id="fRight"></div></footer>
+  </article>
+</div>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/demo-data.js"></script>
+<script src="assets/js/common.js"></script>
+<script src="assets/js/md-render.js"></script>
+<script>
+(function () {
+  var R = window.Reports, el = R.el, $ = function (id) { return document.getElementById(id); };
+  if (R.isDemo) $("demoBanner").hidden = false;
+  var id = Number(R.params.get("id"));
+
+  function fail(text, withList) {
+    var s = $("state"); s.textContent = "";
+    var m = el("div", "msg", text + (withList ? " " : ""));
+    if (withList) { var a = el("a", null, "Back to your reports"); a.href = R.link("index.html"); m.appendChild(a); }
+    s.appendChild(m);
+  }
+  if (!Number.isInteger(id) || id < 1) { fail("We couldn't find that report.", true); return; }
+  $("navBack").href = R.link("index.html");
+
+  Promise.all([R.loadReport(id), R.loadList()]).then(function (res) {
+    var rep = res[0], rows = res[1] || [];
+    if (!rep) { fail("We couldn't find that report. It may have been replaced by a newer one.", true); return; }
+
+    /* frozen snapshot: hand over to the static file (path re-validated, never trusted blindly) */
+    if (rep.render_mode === "snapshot") {
+      if (R.snapshotPath.test(rep.report_file_path || "")) { location.replace(rep.report_file_path); return; }
+      fail("This report is not available right now. Please contact us.", true); return;
+    }
+
+    var Q = R.quarter(rep), M = R.month(rep.service_month), fm = rep.front_matter || {};
+    var ledger = { credits: rep.credits, status: R.status(rep.status), completed_date: R.fmtDate(rep.completed_date),
+                   service_month: M ? M.text : null, service_title: rep.title, client_name: rep.client_name, quarter: Q.label };
+    var out = window.MdRender.render(rep.body_md, { ledger: ledger });
+
+    /* header: title/subtitle/meta from front_matter, falling back to database fields */
+    var title = fm.title || rep.title;
+    $("rTitle").textContent = title;
+    $("rSub").textContent = fm.subtitle || (rep.client_name + " · " + Q.label + (rep.report_label ? " · " + rep.report_label : ""));
+    var meta = $("rMeta");
+    [["Prepared for", fm.prepared_for], ["Prepared by", fm.prepared_by || "Digiful"],
+     ["Date", R.fmtDate(fm.report_date || rep.completed_date)], ["Status", fm.status]].forEach(function (p) {
+      if (!p[1] || p[1] === "N/A") return;
+      var d = el("div", "meta-item", p[0]); d.appendChild(el("span", null, p[1])); meta.appendChild(d);
+    });
+
+    /* delivery strip: live ledger values (serviceflow.transactions) */
+    var strip = $("ledger");
+    [["Service", rep.title, null], ["Quarter", Q.label, Q.range], ["Month", M ? M.text : "N/A", null],
+     ["Credits used", rep.credits === null || rep.credits === undefined ? "N/A" : String(rep.credits), null],
+     ["Delivery status", R.status(rep.status), rep.completed_date ? "Completed " + R.fmtDate(rep.completed_date) : null]].forEach(function (p) {
+      var d = el("div"); d.appendChild(el("b", null, p[0])); d.appendChild(el("span", null, p[1]));
+      if (p[2] && p[0] !== "Delivery status") d.appendChild(el("small", null, p[2]));
+      strip.appendChild(d);
+    });
+
+    $("body").innerHTML = out.html;   /* renderer escapes all text; no raw HTML passes through */
+    var toc = $("tocList");
+    out.toc.forEach(function (t) { var li = el("li"), a = el("a", null, t.title); a.href = "#" + t.id; a.setAttribute("data-n", t.num || "\u2014"); li.appendChild(a); toc.appendChild(li); });
+
+    $("fLeft").textContent = "Digiful — " + title;
+    $("fRight").textContent = "Prepared for " + rep.client_name + " · " + Q.label;
+    document.title = title + " | " + rep.client_name + " | Digiful";   /* also the PDF file name */
+
+    /* navigation: back goes to this report's quarter; prev/next stay inside the quarter */
+    $("navBack").href = R.link("index.html", { y: Q.year }) + "#q-" + Q.key;
+    var inQ = rows.filter(function (r) { return String(r.quarter_id) === Q.key; });
+    var i = inQ.findIndex(function (r) { return r.report_instance_id === rep.report_instance_id; });
+    function wire(elId, titleId, target) {
+      if (!target) return;
+      var a = $(elId); a.href = R.link("report.html", { id: target.report_instance_id }); a.hidden = false;
+      $(titleId).textContent = (target.report_label ? target.report_label + ": " : "") + target.title;
+    }
+    if (i >= 0) { wire("navPrev", "prevTitle", inQ[i - 1]); wire("navNext", "nextTitle", inQ[i + 1]); }
+
+    $("pdfBtn").hidden = false; $("pdfBtn").addEventListener("click", function () { window.print(); });
+    $("state").hidden = true; $("report").hidden = false;
+    if (location.hash) { var t = document.getElementById(decodeURIComponent(location.hash.slice(1))); if (t) t.scrollIntoView(); }
+  }).catch(function (err) { fail(R.message(err), true); });
+})();
+</script>
+</body>
+</html>
