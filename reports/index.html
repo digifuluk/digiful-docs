@@ -43,15 +43,16 @@
   var R = window.Reports, el = R.el;
   if (R.isDemo) document.getElementById("demoBanner").hidden = false;
   var list = document.getElementById("list"), yearSel = document.getElementById("yearSel"), qSel = document.getElementById("qSel");
-  var rows = [];
+  var rows = [], qsum = {};
 
   function fail(err) {
     list.textContent = "";
     list.appendChild(el("div", "msg", R.message(err)));
   }
 
-  R.loadList().then(function (data) {
-    rows = data || [];
+  Promise.all([R.loadList(), R.loadQuarters()]).then(function (res) {
+    rows = res[0] || [];
+    (res[1] || []).forEach(function (q) { qsum[String(q.quarter_id)] = q; });
     if (!rows.length) { list.textContent = ""; list.appendChild(el("div", "msg", "No reports are available yet. We'll let you know as soon as the first one is ready.")); return; }
     document.getElementById("clientName").textContent = rows[0].client_name;
     document.title = "Your reports | " + rows[0].client_name;
@@ -67,7 +68,77 @@
     if (wantQ && /^Q[1-4]$/.test(wantQ)) qSel.value = wantQ;
     yearSel.disabled = qSel.disabled = false;
     render();
+    R.track("page_view", null, { page: "index" });
   }).catch(fail);
+
+  /* ---------- quarter boxes ---------- */
+  var BONUS_LABEL = { EARLY_ADOPTER: "Early adopter", SIGNUP: "Sign-up", UPGRADE: "Upgrade", SERVICE_SPECIFIC: "Service specific" };
+  function plus(n) { return (n > 0 ? "+" : "") + n; }
+  function line(label, value, cls) {
+    var d = el("div", "ql" + (cls ? " " + cls : ""));
+    d.appendChild(el("span", "k", label)); d.appendChild(el("span", "v", value));
+    return d;
+  }
+  function toggle(title, rowsFn) {
+    var d = el("details", "qt"), s = el("summary", null, title);
+    d.appendChild(s); var b = el("div", "qt-body"); rowsFn(b); d.appendChild(b);
+    return d;
+  }
+  /* bonus lines: early adopter months are ONE line with a month breakdown; every other grant is its own line */
+  function bonusLines(q) {
+    var out = [], ea = [];
+    (q.bonuses || []).forEach(function (b) {
+      if (b.type === "EARLY_ADOPTER") { ea.push(b); return; }
+      var det = (b.services && b.services.length) ? "Details: " + b.services.join(", ") : null;
+      out.push({ label: "🎁 Bonus credits - " + (BONUS_LABEL[b.type] || "Other"), credits: Number(b.credits), details: det });
+    });
+    if (ea.length) {
+      out.unshift({ label: "🎁 Bonus credits - Early adopter", credits: ea.reduce(function (t, b) { return t + Number(b.credits); }, 0),
+        details: "Details: " + ea.map(function (b) { return plus(Number(b.credits)) + " Month " + b.month_no; }).join(", ") });
+    }
+    return out;
+  }
+  function quarterBoxes(q) {
+    var wrap = el("div", "qboxes");
+    wrap.appendChild(toggle("🪙 Credits spend", function (b) {
+      b.appendChild(line("🪙 Plan credits per quarter", String(q.plan_credits)));
+      b.appendChild(line("⇢ Borrowing from previous quarter", String(q.borrowed_in_credits)));
+      bonusLines(q).forEach(function (x) { b.appendChild(line(x.label, plus(x.credits) + (x.details ? " | " + x.details : ""))); });
+      if (Number(q.refund_credits)) b.appendChild(line("Refunded credits", plus(Number(q.refund_credits))));
+      if (Number(q.adjustment_credits)) b.appendChild(line("Adjustments", plus(Number(q.adjustment_credits))));
+      b.appendChild(line("Credits used", String(q.credits_used)));
+      b.appendChild(line("Quarter balance", String(q.quarter_balance), "total"));
+    }));
+    wrap.appendChild(toggle("🪙 ⇢ Additional credits (borrowing)", function (b) {
+      b.appendChild(line("⇢ Revision work credit spend", String(q.revision_borrowed_credits)));
+    }));
+    wrap.appendChild(toggle("💷 Off plan work", function (b) {
+      var op = q.off_plan || [];
+      if (!op.length) { b.appendChild(el("div", "ql none", "N/A")); return; }
+      op.forEach(function (p) { b.appendChild(line("SID " + p.service_id + " - " + p.title, R.money(p.price_gbp))); });
+    }));
+    return wrap;
+  }
+  /* early adopter cards: once per month grant, below the list. Taken from the quarter summary; falls back to the rows. */
+  function earlyAdopterCards(g, q) {
+    var seen = {}, items = [];
+    var src = q ? (q.bonuses || []) : [];
+    if (!src.length) g.rows.forEach(function (r) { (r.bonuses || []).forEach(function (b) { if (b.type === "EARLY_ADOPTER") src.push(b); }); });
+    src.forEach(function (b) {
+      if (b.type !== "EARLY_ADOPTER" || Number(b.credits) <= 0) return;
+      var k = b.month_no + "/" + b.month_of; if (seen[k]) return; seen[k] = 1; items.push(b);
+    });
+    if (!items.length) return null;
+    items.sort(function (a, b) { return a.month_no - b.month_no; });
+    var wrap = el("div", "bonuses ea-set");
+    items.forEach(function (b) {
+      var c = R.bonusCard({ type: b.type, credits: b.credits, month_no: b.month_no, month_of: b.month_of });
+      var m = R.month(String(b.billing_month || "").slice(0, 7));
+      if (m) c.appendChild(el("span", "bnote", "Applies to your " + m.text + " orders"));
+      wrap.appendChild(c);
+    });
+    return wrap;
+  }
 
   function render() {
     var y = yearSel.value, q = qSel.value, anchor = (location.hash.match(/^#q-(\d+)$/) || [])[1];
@@ -93,22 +164,39 @@
       var body = el("div", "qbody");
       g.rows.forEach(function (r) {
         var a = el("a", "rcard"); a.href = R.link("report.html", { id: r.report_instance_id });
+        var isSummary = r.render_mode === "summary";
         var m = R.month(r.service_month);
         if (m) { var mc = el("div", "mcard"); mc.setAttribute("aria-label", "Month: " + m.text); mc.appendChild(el("b", null, m.mon)); mc.appendChild(el("span", null, m.yr)); a.appendChild(mc); }
         var main = el("div", "main"), t = el("div", "t", r.title);
         if (r.report_label) t.appendChild(el("span", "pill", r.report_label));
-        main.appendChild(t); a.appendChild(main); a.appendChild(el("span", "go", "View report ›"));
+        main.appendChild(t);
+        if (r.service_name && r.service_name.toLowerCase() !== String(r.title).toLowerCase()) main.appendChild(el("div", "s", r.service_name));
+        var bn = R.bonusRow(r.bonuses, ["SERVICE_SPECIFIC"]);   /* early adopter cards sit once below the list */
+        if (bn) main.appendChild(bn);
+        a.appendChild(main); a.appendChild(el("span", "go", isSummary ? "• See details" : "📄 See report"));
+        var open = function () { R.track("report_open", r.report_instance_id, { kind: isSummary ? "details" : "report" }); };
+        a.addEventListener("click", open); a.addEventListener("auxclick", open);
         body.appendChild(a);
       });
-      d.appendChild(body); list.appendChild(d);
+      var ea = earlyAdopterCards(g, qsum[g.Q.key]);
+      if (ea) body.appendChild(ea);
+      d.appendChild(body);
+      if (qsum[g.Q.key]) d.appendChild(quarterBoxes(qsum[g.Q.key]));
+      list.appendChild(d);
     });
     if (anchorShown) {
       var target = document.getElementById("q-" + anchor);
       target.scrollIntoView({ block: "start" }); target.classList.add("flash");
     }
   }
-  yearSel.addEventListener("change", function () { history.replaceState(null, "", location.pathname + location.search); render(); });
-  qSel.addEventListener("change", function () { history.replaceState(null, "", location.pathname + location.search); render(); });
+  function onFilter(which, sel) {
+    return function () {
+      history.replaceState(null, "", location.pathname + location.search); render();
+      R.track("filter_change", null, { page: "index", filter: which, value: sel.value || "all" });
+    };
+  }
+  yearSel.addEventListener("change", onFilter("year", yearSel));
+  qSel.addEventListener("change", onFilter("quarter", qSel));
 })();
 </script>
 </body>
