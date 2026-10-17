@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
+<meta http-equiv="Content-Security-Policy" content="frame-src https://www.youtube-nocookie.com https://player.vimeo.com https://www.loom.com https://play.gumlet.io https://berrycast.app https://*.berrycast.app https://berrycast.com https://*.berrycast.com; object-src 'none'; base-uri 'self'">
 <title>Report | Digiful</title>
+<link rel="stylesheet" href="../css/digiful-dark.css">
 <link rel="stylesheet" href="assets/css/report.css">
 </head>
 <body>
@@ -32,6 +34,7 @@
     </header>
     <main class="content">
       <div class="ledger" id="ledger" aria-label="Delivery details"></div>
+      <div id="bonusRow"></div>
       <nav class="toc" aria-label="Contents"><h2>Contents</h2><ol id="tocList"></ol></nav>
       <div id="body"></div>
     </main>
@@ -58,25 +61,51 @@
   if (!Number.isInteger(id) || id < 1) { fail("We couldn't find that report.", true); return; }
   $("navBack").href = R.link("index.html");
 
+  /* simple "summary" report: what was delivered, from the order + service catalogue (all text via textContent) */
+  function summaryCard(rep, ledger) {
+    var sec = el("div", "section"), hd = el("div", "section-header");
+    hd.appendChild(el("div", "section-num", "\u2713")); hd.appendChild(el("div", "section-title", "What we delivered"));
+    var b = el("div", "section-body"); sec.appendChild(hd); sec.appendChild(b);
+    String(rep.description || "").split(/\n\s*\n/).forEach(function (t) { t = t.trim(); if (t) b.appendChild(el("p", "desc", t)); });
+    if (rep.extended_description) {
+      var ext = el("div", "ext");
+      /* '##' would create numbered report sections; in a summary it is just a sub-heading */
+      ext.innerHTML = window.MdRender.render(String(rep.extended_description).replace(/^##(?!#)/gm, "###"), { ledger: ledger }).html;
+      b.appendChild(ext);
+    }
+    var u = R.safeHttps(rep.output_url);
+    if (u) {
+      var box = el("div", "outlink"), a = el("a", "out-btn", "View the finished work \u203A");
+      a.href = u.href; a.target = "_blank"; a.rel = "noopener noreferrer";
+      box.appendChild(a); box.appendChild(el("span", "out-host", u.hostname)); b.appendChild(box);
+    }
+    var nodes = R.embedNodes(rep.report_embed);
+    if (nodes.length) { var m = el("div", "media-set"); nodes.forEach(function (n) { m.appendChild(n); }); b.appendChild(m); }
+    if (!b.childNodes.length) b.appendChild(el("p", "desc", "N/A"));
+    return sec;
+  }
+
   Promise.all([R.loadReport(id), R.loadList()]).then(function (res) {
     var rep = res[0], rows = res[1] || [];
     if (!rep) { fail("We couldn't find that report. It may have been replaced by a newer one.", true); return; }
 
     /* frozen snapshot: hand over to the static file (path re-validated, never trusted blindly) */
     if (rep.render_mode === "snapshot") {
-      if (R.snapshotPath.test(rep.report_file_path || "")) { location.replace(rep.report_file_path); return; }
+      if (R.snapshotPath.test(rep.report_file_path || "")) { location.replace(R.snapshotUrl(rep.report_file_path)); return; }
       fail("This report is not available right now. Please contact us.", true); return;
     }
 
     var Q = R.quarter(rep), M = R.month(rep.service_month), fm = rep.front_matter || {};
     var ledger = { credits: rep.credits, status: R.status(rep.status), completed_date: R.fmtDate(rep.completed_date),
                    service_month: M ? M.text : null, service_title: rep.title, client_name: rep.client_name, quarter: Q.label };
-    var out = window.MdRender.render(rep.body_md, { ledger: ledger });
+    var isSummary = rep.render_mode === "summary";
+    var out = isSummary ? { html: "", toc: [] } : window.MdRender.render(rep.body_md, { ledger: ledger });
 
     /* header: title/subtitle/meta from front_matter, falling back to database fields */
     var title = fm.title || rep.title;
     $("rTitle").textContent = title;
-    $("rSub").textContent = fm.subtitle || (rep.client_name + " · " + Q.label + (rep.report_label ? " · " + rep.report_label : ""));
+    var svc = rep.service_name && rep.service_name.toLowerCase() !== String(title).toLowerCase() ? rep.service_name + " · " : "";
+    $("rSub").textContent = fm.subtitle || (svc + rep.client_name + " · " + Q.label + (rep.report_label ? " · " + rep.report_label : ""));
     var meta = $("rMeta");
     [["Prepared for", fm.prepared_for], ["Prepared by", fm.prepared_by || "Digiful"],
      ["Date", R.fmtDate(fm.report_date || rep.completed_date)], ["Status", fm.status]].forEach(function (p) {
@@ -86,7 +115,7 @@
 
     /* delivery strip: live ledger values (serviceflow.transactions) */
     var strip = $("ledger");
-    [["Service", rep.title, null], ["Quarter", Q.label, Q.range], ["Month", M ? M.text : "N/A", null],
+    [["Service", rep.service_name || rep.title, null], ["Quarter", Q.label, Q.range], ["Month", M ? M.text : "N/A", null],
      ["Credits used", rep.credits === null || rep.credits === undefined ? "N/A" : String(rep.credits), null],
      ["Delivery status", R.status(rep.status), rep.completed_date ? "Completed " + R.fmtDate(rep.completed_date) : null]].forEach(function (p) {
       var d = el("div"); d.appendChild(el("b", null, p[0])); d.appendChild(el("span", null, p[1]));
@@ -94,7 +123,12 @@
       strip.appendChild(d);
     });
 
-    $("body").innerHTML = out.html;   /* renderer escapes all text; no raw HTML passes through */
+    /* bonus cards: every bonus that applies to this order (service specific, early adopter) */
+    var bonusBox = R.bonusRow(rep.bonuses, ["SERVICE_SPECIFIC", "EARLY_ADOPTER"]);
+    if (bonusBox) $("bonusRow").appendChild(bonusBox);
+
+    if (isSummary) { $("body").appendChild(summaryCard(rep, ledger)); document.querySelector(".toc").hidden = true; }
+    else $("body").innerHTML = out.html;   /* renderer escapes all text; no raw HTML passes through */
     var toc = $("tocList");
     out.toc.forEach(function (t) { var li = el("li"), a = el("a", null, t.title); a.href = "#" + t.id; a.setAttribute("data-n", t.num || "\u2014"); li.appendChild(a); toc.appendChild(li); });
 
@@ -113,8 +147,9 @@
     }
     if (i >= 0) { wire("navPrev", "prevTitle", inQ[i - 1]); wire("navNext", "nextTitle", inQ[i + 1]); }
 
-    $("pdfBtn").hidden = false; $("pdfBtn").addEventListener("click", function () { window.print(); });
+    $("pdfBtn").hidden = false; $("pdfBtn").addEventListener("click", function () { R.track("pdf_download", rep.report_instance_id, { page: "report" }); window.print(); });
     $("state").hidden = true; $("report").hidden = false;
+    R.track("page_view", rep.report_instance_id, { page: "report", kind: isSummary ? "details" : "report" });
     if (location.hash) { var t = document.getElementById(decodeURIComponent(location.hash.slice(1))); if (t) t.scrollIntoView(); }
   }).catch(function (err) { fail(R.message(err), true); });
 })();

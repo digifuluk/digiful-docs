@@ -1,0 +1,60 @@
+/* Digiful shared theme (dark, high contrast) - used by /reports and /qof.
+   Pages load this FIRST, then their own small stylesheet:
+     <link rel="stylesheet" href="../css/digiful-dark.css">
+     <link rel="stylesheet" href="assets/css/<page>.css">
+   Contains only what every Digiful page needs: colour tokens, base typography, page frame, header, footer,
+   banners/messages and the light print theme. Page-specific layout stays in the page's own CSS. */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#000; --panel:#0d1117; --panel2:#161b22; --line:#30363d; --line-soft:#21262d;
+  --ink:#f0f6fc; --text:#e6edf3; --muted:#a8b3bf; --muted2:#8b949e;
+  --blue:#1f6feb; --blue-bright:#58a6ff;
+  --blue-bg:#0c2d6b; --blue-bd:#58a6ff;
+  --green-bg:#0f2d1a; --green-ink:#56d364;
+  --amber-bg:#2d2305; --amber-ink:#e3b341;
+  --red-ink:#ff7b72; --red-bg:#3d1214;
+  --th-bg:#21262d; --th-ink:#f0f6fc; --stripe:#0a0e13;
+}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:Arial,Helvetica,sans-serif;font-size:15px;color:var(--text);background:var(--bg);line-height:1.6}
+a{color:var(--blue-bright)}
+.page{max-width:920px;margin:0 auto;background:var(--bg)}
+
+/* header */
+.header{background:var(--panel);padding:40px 44px 28px;position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+.header::before{content:'';position:absolute;top:-70px;right:-70px;width:280px;height:280px;background:radial-gradient(circle,rgba(88,166,255,.16) 0%,transparent 70%)}
+.header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#58a6ff,#1f6feb,#58a6ff)}
+.brand{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--blue-bright);font-weight:700;margin-bottom:18px}
+.header h1{font-size:27px;color:var(--ink);font-weight:700;line-height:1.25;margin-bottom:8px;max-width:680px;position:relative}
+.subtitle{color:var(--blue-bright);font-size:14px;margin-bottom:22px;position:relative}
+.header-meta{display:flex;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:16px;position:relative}
+.meta-item{font-size:11.5px;color:var(--muted);padding-right:22px;margin-right:22px;margin-top:8px;border-right:1px solid var(--line)}
+.meta-item:last-child{border-right:none}
+.meta-item span{color:var(--ink);display:block;font-weight:700;margin-top:3px;font-size:13px}
+
+.content{padding:30px 44px 16px}
+.footer{background:var(--panel);border-top:1px solid var(--line);padding:18px 44px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:11.5px;color:var(--muted)}
+
+.dummy{background:var(--amber-bg);color:var(--amber-ink);border-bottom:1px solid var(--amber-ink);font-size:12px;padding:8px 16px;text-align:center}
+strong{color:var(--ink)}
+.msg{border:1px solid var(--line);border-radius:10px;padding:28px;text-align:center;color:var(--text);margin:28px 0;background:var(--panel)}
+.msg a{font-weight:700}
+.loading{color:var(--muted);padding:28px;text-align:center}
+code{font-family:"Courier New",monospace;font-size:.92em;background:var(--panel2);padding:1px 5px;border-radius:4px}
+
+/* responsive */
+@media(max-width:640px){
+  body{font-size:15px}
+  .header,.content,.footer{padding-left:18px;padding-right:18px}
+  .header{padding-top:30px}.header h1{font-size:22px}
+}
+
+/* print / PDF: light theme, no chrome */
+@media print{
+  :root{--bg:#fff;--panel:#f6f8fa;--panel2:#eef1f4;--line:#d0d7de;--line-soft:#e6e9ec;--ink:#0d1117;--text:#24292f;--muted:#57606a;--muted2:#57606a;
+    --blue:#1f6feb;--blue-bright:#0b5cd5;--blue-bg:#f0f6ff;--blue-bd:#1f6feb;--green-bg:#dafbe1;--green-ink:#116329;--amber-bg:#fff8c5;--amber-ink:#7d4e00;--red-ink:#a40e26;--red-bg:#ffebe9;--th-bg:#0d1117;--th-ink:#fff;--stripe:#fafbfc}
+  body{font-size:11.5px;background:#fff}
+  .header::before,.header::after{display:none}
+  a{color:inherit;text-decoration:none}
+  .dummy{display:none!important}
+}

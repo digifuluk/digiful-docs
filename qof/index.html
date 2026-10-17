@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Your Quarter Services — Digiful</title>
+<link rel="stylesheet" href="../css/digiful-dark.css">
+<link rel="stylesheet" href="assets/css/qof.css">
+</head>
+<body>
+
+<div class="page page-narrow">
+  <header class="header">
+    <div class="brand"><img class="logo" src="../images/logo/digiful-logo.svg" alt="Digiful" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span hidden>Digiful</span></div>
+    <h1>Your Quarter Services</h1>
+    <div class="subtitle">Client Retainer</div>
+    <p class="header-desc">Choose the services you'd like this quarter and see how your credits are used.</p>
+  </header>
+
+  <div class="content">
+    <div id="status-bar" class="status loading">⏳ Loading your quarter…</div>
+    <div id="info-bar" class="info-bar" style="display:none"></div>
+    <div class="proto-note" id="proto-note" style="display:none"><strong>Working session.</strong> Nothing you select here is saved or submitted yet — use the summary at the bottom to record the decision.</div>
+
+    <div id="main" style="display:none">
+      <div class="section-box">
+        <h2>Part 1: Choose your services</h2>
+        <p class="section-subtitle" id="p1-sub"></p>
+        <div id="toast" class="toast"></div>
+
+        <div id="strat-box" style="display:none">
+          <div class="pick-grid strat-grid">
+            <label class="pick-field"><span class="pick-label">Select strategy</span><select class="pick-select" id="strat-select"></select></label>
+            <button type="button" class="link-btn" id="strat-remove" hidden>❌ Remove strategy</button>
+          </div>
+          <div id="strat-detail"></div>
+        </div>
+
+        <div id="svc-box">
+          <div id="svc-rows"></div>
+          <button type="button" class="add-btn" id="add-svc">➕ Add service</button>
+        </div>
+      </div>
+
+      <div class="section-box">
+        <h2>Part 2: Your credits</h2>
+        <p class="section-subtitle">See how your choices fit this quarter's credits, and how a different plan would change it.</p>
+        <div id="part2-empty" class="empty-msg">Choose at least one service above to see your credits.</div>
+        <div id="part2-body" style="display:none">
+          <div class="credit-counter" id="credit-counter"></div>
+
+          <div class="fb-wrap">
+            <div class="fb-title">Plan view</div>
+            <div class="fb-cap" id="plan-cap">See how your selection fits each plan.</div>
+            <div class="plan-tabs" id="plan-tabs"></div>
+            <div class="def-caption" id="def-caption"></div>
+            <div id="q-lists"></div>
+            <div class="horizon-note" id="horizon-note" style="display:none"></div>
+            <div class="callout upgrade" id="cc-upgrade"></div>
+            <div class="callout reassure" id="cc-reassure"></div>
+          </div>
+
+          <button class="btn" id="summary-btn" type="button">Generate meeting summary →</button>
+          <div class="summary-box" id="summary-box"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer"><div>Digiful</div><div>Private to your organisation</div></footer>
+</div>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/qof.js"></script>
+</body>
+</html>
