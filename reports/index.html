@@ -206,7 +206,8 @@
           if (r.service_id !== null && r.service_id !== undefined) srow.appendChild(R.chip("sid", "SID " + r.service_id));
           main.appendChild(srow);
         }
-        if (orderOnly && r.description) main.appendChild(el("div", "d", r.description));
+        /* description under every card, clamped to two lines by CSS (.rcard .d). Order text override if set, else the service description. */
+        if (r.description) main.appendChild(el("div", "d", r.description));
         a.appendChild(main);
         var side = el("div", "side");
         if (r.order_status) side.appendChild(statusChip(r));
