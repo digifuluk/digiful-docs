@@ -52,6 +52,11 @@
       var map = { "Completed": "Completed", "In Progress": "In progress", "Approved": "Approved", "Scheduled": "Scheduled", "On Hold": "On hold" };
       return map[s] || (s ? String(s) : "N/A");
     },
+    /* css modifier for the status chip */
+    statusClass: function (s) {
+      var map = { "Completed": "st-done", "In Progress": "st-prog", "Approved": "st-appr", "Scheduled": "st-sched", "On Hold": "st-hold" };
+      return map[s] || "st-appr";
+    },
 
     /* ---- data access: Supabase RPC, or demo data with ?demo=1 ---- */
     rpc: function (name, body) {
@@ -70,6 +75,14 @@
       var cr = R.creds();
       if (!cr) return Promise.reject(new Error("incomplete-link"));
       return R.rpc("get_live_reports", { p_client_id: cr.c, p_auth_key: cr.k });
+    },
+    /* Orders + reports for the index page (migration 022): every client-visible order, with report_instance_id null when no report exists yet.
+       If the new RPC is not live yet, fall back to the reports-only list so the page keeps working. report.html keeps using loadList(). */
+    loadOrders: function () {
+      if (R.isDemo) return Promise.resolve(window.DemoData.rows.slice());
+      var cr = R.creds();
+      if (!cr) return Promise.reject(new Error("incomplete-link"));
+      return R.rpc("get_orders_and_reports", { p_client_id: cr.c, p_auth_key: cr.k }).catch(function () { return R.loadList(); });
     },
     loadReport: function (id) {
       if (R.isDemo) return Promise.resolve(window.DemoData.report(id));

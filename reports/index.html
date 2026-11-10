@@ -51,14 +51,14 @@
     list.appendChild(el("div", "msg", R.message(err)));
   }
 
-  Promise.all([R.loadList(), R.loadQuarters()]).then(function (res) {
+  Promise.all([R.loadOrders(), R.loadQuarters()]).then(function (res) {
     rows = res[0] || [];
     (res[1] || []).forEach(function (q) { qsum[String(q.quarter_id)] = q; });
     if (!rows.length) { list.textContent = ""; list.appendChild(el("div", "msg", "No reports are available yet. We'll let you know as soon as the first one is ready.")); return; }
     document.getElementById("clientName").textContent = rows[0].client_name;
     document.title = "Your reports | " + rows[0].client_name;
-    document.getElementById("metaTotal").textContent = rows.length;
-    var latest = rows.reduce(function (a, r) { return r.period_end > a ? r.period_end : a; }, "");
+    document.getElementById("metaTotal").textContent = rows.filter(hasReport).length;   /* reports only; orders without a report are counted separately */
+    var latest = rows.filter(hasReport).reduce(function (a, r) { return r.period_end > a ? r.period_end : a; }, "");
     document.getElementById("metaLatest").textContent = R.fmtDate(latest);
 
     var years = Array.from(new Set(rows.map(function (r) { return R.quarter(r).year; }))).sort().reverse();
@@ -71,6 +71,21 @@
     render();
     R.track("page_view", null, { page: "index" });
   }).catch(fail);
+
+  /* ---------- orders vs reports ---------- */
+  function hasReport(r) { return r.report_instance_id !== null && r.report_instance_id !== undefined; }
+  function plural(n, w) { return n + " " + w + (n === 1 ? "" : "s"); }
+  /* "5 orders · 3 reports". Falls back to reports-only wording if the older RPC answered (no transaction_id). */
+  function countText(rs) {
+    var reports = rs.filter(hasReport).length;
+    if (rs.length && rs.every(function (r) { return r.transaction_id === null || r.transaction_id === undefined; })) return plural(reports, "report");
+    var seen = {}, orders = 0;
+    rs.forEach(function (r) { var k = r.transaction_id !== null && r.transaction_id !== undefined ? "t" + r.transaction_id : "r" + r.report_instance_id; if (!seen[k]) { seen[k] = 1; orders++; } });
+    return plural(orders, "order") + " \u00B7 " + plural(reports, "report");
+  }
+  function statusChip(r) {
+    return el("span", "stchip " + R.statusClass(r.order_status), R.status(r.order_status));
+  }
 
   /* ---------- quarter boxes ---------- */
   var BONUS_LABEL = { EARLY_ADOPTER: "Early adopter", SIGNUP: "Sign-up", UPGRADE: "Upgrade", SERVICE_SPECIFIC: "Service specific" };
@@ -145,8 +160,8 @@
     var y = yearSel.value, q = qSel.value, anchor = (location.hash.match(/^#q-(\d+)$/) || [])[1];
     var shown = rows.filter(function (r) { var Q = R.quarter(r); return (!y || Q.year === y) && (!q || Q.q === q); });
     list.textContent = "";
-    document.getElementById("count").textContent = shown.length + (shown.length === 1 ? " report" : " reports");
-    if (!shown.length) { list.appendChild(el("div", "msg", "No reports for this selection. Try another year or quarter.")); return; }
+    document.getElementById("count").textContent = countText(shown);
+    if (!shown.length) { list.appendChild(el("div", "msg", "Nothing to show for this selection. Try another year or quarter.")); return; }
 
     var groups = [], byKey = {};
     shown.forEach(function (r) {
@@ -160,11 +175,13 @@
       d.open = anchorShown ? (g.Q.key === anchor) : (i === 0);   /* back link opens its own quarter; otherwise the newest */
       var s = el("summary");
       s.appendChild(el("h2", null, g.Q.label)); s.appendChild(el("span", "range", g.Q.range));
-      s.appendChild(el("span", "n", g.rows.length + (g.rows.length === 1 ? " report" : " reports")));
+      s.appendChild(el("span", "n", countText(g.rows)));
       d.appendChild(s);
       var body = el("div", "qbody");
       g.rows.forEach(function (r) {
-        var a = el("a", "rcard"); a.href = R.link("report.html", { id: r.report_instance_id });
+        var orderOnly = !hasReport(r);   /* order with no report yet: a plain card, no link */
+        var a = orderOnly ? el("div", "rcard order") : el("a", "rcard");
+        if (!orderOnly) a.href = R.link("report.html", { id: r.report_instance_id });
         var isSummary = r.render_mode === "summary";
         var m = R.month(r.service_month);
         if (m) { var mc = el("div", "mcard"); mc.setAttribute("aria-label", "Month: " + m.text); mc.appendChild(el("b", null, m.mon)); mc.appendChild(el("span", null, m.yr)); a.appendChild(mc); }
@@ -174,9 +191,16 @@
         if (r.service_name && r.service_name.toLowerCase() !== String(r.title).toLowerCase()) main.appendChild(el("div", "s", r.service_name));
         var bn = R.bonusRow(r.bonuses, ["SERVICE_SPECIFIC"]);   /* early adopter cards sit once below the list */
         if (bn) main.appendChild(bn);
-        a.appendChild(main); a.appendChild(el("span", "go", isSummary ? "• See details" : "📄 See report"));
-        var open = function () { R.track("report_open", r.report_instance_id, { kind: isSummary ? "details" : "report" }); };
-        a.addEventListener("click", open); a.addEventListener("auxclick", open);
+        if (orderOnly && r.description) main.appendChild(el("div", "d", r.description));
+        a.appendChild(main);
+        var side = el("div", "side");
+        if (r.order_status) side.appendChild(statusChip(r));
+        if (!orderOnly) side.appendChild(el("span", "go", isSummary ? "• See details" : "📄 See report"));
+        if (side.childNodes.length) a.appendChild(side);
+        if (!orderOnly) {
+          var open = function () { R.track("report_open", r.report_instance_id, { kind: isSummary ? "details" : "report" }); };
+          a.addEventListener("click", open); a.addEventListener("auxclick", open);
+        }
         body.appendChild(a);
       });
       var ea = earlyAdopterCards(g, qsum[g.Q.key]);
