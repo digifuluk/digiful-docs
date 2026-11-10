@@ -142,6 +142,26 @@
       return wrap;
     },
 
+    /* ---- chips: small coloured cards (credits, service-specific bonus, service id, month). Text only, built with DOM calls. ---- */
+    chip: function (cls, text) { return R.el("span", "chip " + cls, text); },
+    /* "🪙 50 credits"; null when the number is missing (older RPC without the credits column, or no value) */
+    creditsChip: function (n) {
+      if (n === null || n === undefined || n === "" || !isFinite(Number(n))) return null;
+      return R.chip("cr", "🪙 " + Number(n) + (Number(n) === 1 ? " credit" : " credits"));
+    },
+    /* service-specific gift credits for ONE order -> [chip, optional note]; empty list when none applies */
+    bonusChipNodes: function (bonuses) {
+      var out = [];
+      (bonuses || []).forEach(function (b) {
+        if (b.type !== "SERVICE_SPECIFIC" || !(Number(b.credits) > 0)) return;
+        out.push(R.chip("bn", "🎁 +" + Number(b.credits) + " bonus credits"));
+        if (Number(b.covers_orders) > 1) out.push(R.el("span", "bnote", "One bonus covering " + Number(b.covers_orders) + " orders"));
+      });
+      return out;
+    },
+    /* lets a long title wrap after a slash (e.g. "Enhancement/Adaptation") instead of overflowing its box */
+    wrapSlashes: function (s) { return String(s === null || s === undefined ? "" : s).replace(/\//g, "/​"); },
+
     message: function (err) {
       return err && err.message === "incomplete-link"
         ? "This link looks incomplete. Please use the full link we sent you, or ask us to resend it."
