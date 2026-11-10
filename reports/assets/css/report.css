@@ -39,9 +39,9 @@ select:focus{outline:2px solid var(--blue-bright);outline-offset:1px}
 
 /* ledger strip */
 .ledger{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:0 0 28px}
-.ledger div{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.ledger>div{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;min-width:0}
 .ledger b{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:4px}
-.ledger span{font-size:15px;font-weight:700;color:var(--ink)}
+.ledger .v{display:block;font-size:15px;font-weight:700;color:var(--ink);overflow-wrap:break-word}
 
 /* toc */
 .toc{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px 24px;margin-bottom:32px}
@@ -150,7 +150,7 @@ table.tbl tr:nth-child(even) td{background:var(--stripe)}
 .mcard{flex-shrink:0;width:62px;text-align:center;background:var(--blue-bg);border:1px solid var(--blue-bd);border-radius:8px;padding:6px 4px;line-height:1.15}
 .mcard b{display:block;font-size:15px;letter-spacing:1px;color:#fff;text-transform:uppercase}
 .mcard span{font-size:11px;color:#cfe3ff}
-.ledger{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.ledger{grid-template-columns:minmax(0,1.9fr) minmax(0,1.3fr) minmax(0,1.4fr) minmax(0,1.05fr)}   /* Service gets the most room (no Month box any more) */
 .ledger small{display:block;font-size:12px;color:var(--muted);margin-top:2px;font-weight:400}
 .md-list{margin:0 0 13px 22px}.md-list li{margin:4px 0}
 .fig{margin:16px 0}.fig img{max-width:100%;height:auto;border-radius:8px;border:1px solid var(--line)}
@@ -221,3 +221,33 @@ table.tbl tr:nth-child(even) td{background:var(--stripe)}
   .rcard .side{width:100%;flex-direction:row;align-items:center;justify-content:space-between;flex-wrap:wrap}
   .rcard .side .go{width:auto}
 }
+
+/* ---- v5: coloured cards (chips): credits = violet, service-specific bonus = amber (same family as the other bonus cards), service id = slate, month = teal ---- */
+:root{
+  --cr-bg:#2a1d4d;--cr-ink:#d6c2ff;--cr-bd:#6e4fc4;
+  --bn-bg:var(--amber-bg);--bn-ink:var(--amber-ink);--bn-bd:#5b4a14;
+  --sid-bg:#1c2733;--sid-ink:#b9c7d6;--sid-bd:#44566a;
+  --mo-bg:#0d3036;--mo-ink:#7fe3ea;--mo-bd:#1f7a84;
+}
+.chip{display:inline-block;font-size:11.5px;font-weight:700;line-height:1.4;padding:3px 10px;border-radius:20px;border:1px solid;white-space:nowrap}
+.chip.cr{background:var(--cr-bg);color:var(--cr-ink);border-color:var(--cr-bd)}
+.chip.bn{background:var(--bn-bg);color:var(--bn-ink);border-color:var(--bn-bd)}
+.chip.sid{background:var(--sid-bg);color:var(--sid-ink);border-color:var(--sid-bd)}
+.chip.mo{background:var(--mo-bg);color:var(--mo-ink);border-color:var(--mo-bd)}
+/* index cards: line 1 = title + cards, line 2 = "Service: name" + SID card */
+.rcard .trow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.rcard .srow{display:block;margin-top:6px;line-height:1.9}   /* one run of text so a long service name wraps naturally; the SID card follows it inline */
+.rcard .srow .sl{color:var(--muted2)}
+.rcard .srow .chip{margin-left:2px}
+.rcard .srow .sn{color:var(--text)}
+.trow .bnote{align-self:center}
+/* report page delivery strip */
+.ledger .chips{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}
+.ledger .chip{font-size:12px;white-space:normal}
+.ledger .chips .bnote{flex-basis:100%}
+/* wider "Next report" button: long titles fit before they are cut off */
+#navNext{flex:0 1 auto;min-width:0;max-width:440px}
+#navNext>span{min-width:0;max-width:100%}
+#navNext small{max-width:100%}
+@media(max-width:640px){.ledger .svc{grid-column:1/-1}}
+@media print{:root{--cr-bg:#f1ebff;--cr-ink:#4b2a9a;--cr-bd:#8a63e0;--bn-bd:#d4a72c;--sid-bg:#eef1f4;--sid-ink:#24292f;--sid-bd:#8c959f;--mo-bg:#e0f7f9;--mo-ink:#0a5560;--mo-bd:#2aa3af}}

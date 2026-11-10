@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Security-Policy" content="frame-src https://www.youtube-nocookie.com https://player.vimeo.com https://www.loom.com https://play.gumlet.io https://berrycast.app https://*.berrycast.app https://berrycast.com https://*.berrycast.com; object-src 'none'; base-uri 'self'">
 <title>Report | Digiful</title>
 <link rel="stylesheet" href="../css/digiful-dark.css">
-<link rel="stylesheet" href="assets/css/report.css">
+<link rel="stylesheet" href="assets/css/report.css?v=20261110b">
 </head>
 <body>
 
@@ -44,7 +44,7 @@
 
 <script src="assets/js/config.js"></script>
 <script src="assets/js/demo-data.js"></script>
-<script src="assets/js/common.js"></script>
+<script src="assets/js/common.js?v=20261110b"></script>
 <script src="assets/js/md-render.js"></script>
 <script>
 (function () {
@@ -115,16 +115,22 @@
 
     /* delivery strip: live ledger values (serviceflow.transactions) */
     var strip = $("ledger");
-    [["Service", rep.service_name || rep.title, null], ["Quarter", Q.label, Q.range], ["Month", M ? M.text : "N/A", null],
-     ["Credits used", rep.credits === null || rep.credits === undefined ? "N/A" : String(rep.credits), null],
-     ["Delivery status", R.status(rep.status), rep.completed_date ? "Completed " + R.fmtDate(rep.completed_date) : null]].forEach(function (p) {
-      var d = el("div"); d.appendChild(el("b", null, p[0])); d.appendChild(el("span", null, p[1]));
-      if (p[2] && p[0] !== "Delivery status") d.appendChild(el("small", null, p[2]));
-      strip.appendChild(d);
-    });
+    function box(label, cls, value) { var d = el("div", cls); d.appendChild(el("b", null, label)); d.appendChild(el("span", "v", value)); return d; }
+    /* Service: long titles wrap (also after a slash) instead of overflowing the box */
+    strip.appendChild(box("Service", "svc", R.wrapSlashes(rep.service_name || rep.title)));
+    /* Quarter: dates, and the month (when the order has one) as a card directly under them. There is no separate Month box. */
+    var bQ = box("Quarter", null, Q.label); bQ.appendChild(el("small", null, Q.range));
+    if (M) { var mrow = el("span", "chips"); mrow.appendChild(R.chip("mo", "📅 " + M.text)); bQ.appendChild(mrow); }
+    strip.appendChild(bQ);
+    /* Credits: "🪙 50 credits", and the service-specific gift credits (when one applies) directly under it */
+    var bC = box("Credits", null, rep.credits === null || rep.credits === undefined ? "N/A" : "🪙 " + Number(rep.credits) + (Number(rep.credits) === 1 ? " credit" : " credits"));
+    var gift = R.bonusChipNodes(rep.bonuses);
+    if (gift.length) { var grow = el("span", "chips"); gift.forEach(function (n) { grow.appendChild(n); }); bC.appendChild(grow); }
+    strip.appendChild(bC);
+    strip.appendChild(box("Delivery status", null, R.status(rep.status)));
 
-    /* bonus cards: every bonus that applies to this order (service specific, early adopter) */
-    var bonusBox = R.bonusRow(rep.bonuses, ["SERVICE_SPECIFIC", "EARLY_ADOPTER"]);
+    /* early adopter bonus cards (service-specific gifts now sit in the Credits box above) */
+    var bonusBox = R.bonusRow(rep.bonuses, ["EARLY_ADOPTER"]);
     if (bonusBox) $("bonusRow").appendChild(bonusBox);
 
     if (isSummary) { $("body").appendChild(summaryCard(rep, ledger)); document.querySelector(".toc").hidden = true; }

@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <title>Your Reports | Digiful</title>
 <link rel="stylesheet" href="../css/digiful-dark.css">
-<link rel="stylesheet" href="assets/css/report.css">
+<link rel="stylesheet" href="assets/css/report.css?v=20261110b">
 </head>
 <body>
 <div class="dummy" id="demoBanner" hidden>DEMO MODE: sample data. Remove <code>?demo=1</code> from the address to use live data.</div>
@@ -38,7 +38,7 @@
 
 <script src="assets/js/config.js"></script>
 <script src="assets/js/demo-data.js"></script>
-<script src="assets/js/common.js"></script>
+<script src="assets/js/common.js?v=20261110b"></script>
 <script>
 (function () {
   var R = window.Reports, el = R.el;
@@ -185,12 +185,20 @@
         var isSummary = r.render_mode === "summary";
         var m = R.month(r.service_month);
         if (m) { var mc = el("div", "mcard"); mc.setAttribute("aria-label", "Month: " + m.text); mc.appendChild(el("b", null, m.mon)); mc.appendChild(el("span", null, m.yr)); a.appendChild(mc); }
-        var main = el("div", "main"), t = el("div", "t", r.title);
+        /* line 1: title + credits card + (only when one applies) service-specific bonus card. Early adopter cards sit once below the list. */
+        var main = el("div", "main"), trow = el("div", "trow"), t = el("div", "t", r.title);
         if (r.report_label) t.appendChild(el("span", "pill", r.report_label));
-        main.appendChild(t);
-        if (r.service_name && r.service_name.toLowerCase() !== String(r.title).toLowerCase()) main.appendChild(el("div", "s", r.service_name));
-        var bn = R.bonusRow(r.bonuses, ["SERVICE_SPECIFIC"]);   /* early adopter cards sit once below the list */
-        if (bn) main.appendChild(bn);
+        trow.appendChild(t);
+        var cc = R.creditsChip(r.credits); if (cc) trow.appendChild(cc);
+        R.bonusChipNodes(r.bonuses).forEach(function (n) { trow.appendChild(n); });
+        main.appendChild(trow);
+        /* line 2: "Service: <name>" + service id card */
+        if (r.service_name || (r.service_id !== null && r.service_id !== undefined)) {
+          var srow = el("div", "s srow");
+          if (r.service_name) { srow.appendChild(el("span", "sl", "Service:")); srow.appendChild(document.createTextNode(" ")); srow.appendChild(el("span", "sn", r.service_name)); srow.appendChild(document.createTextNode(" ")); }
+          if (r.service_id !== null && r.service_id !== undefined) srow.appendChild(R.chip("sid", "SID " + r.service_id));
+          main.appendChild(srow);
+        }
         if (orderOnly && r.description) main.appendChild(el("div", "d", r.description));
         a.appendChild(main);
         var side = el("div", "side");
