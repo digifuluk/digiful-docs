@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <title>Your Reports | Digiful</title>
 <link rel="stylesheet" href="../css/digiful-dark.css">
-<link rel="stylesheet" href="assets/css/report.css?v=20261110b">
+<link rel="stylesheet" href="assets/css/report.css?v=20261110c">
 </head>
 <body>
 <div class="dummy" id="demoBanner" hidden>DEMO MODE: sample data. Remove <code>?demo=1</code> from the address to use live data.</div>
@@ -38,7 +38,7 @@
 
 <script src="assets/js/config.js"></script>
 <script src="assets/js/demo-data.js"></script>
-<script src="assets/js/common.js?v=20261110b"></script>
+<script src="assets/js/common.js?v=20261110c"></script>
 <script>
 (function () {
   var R = window.Reports, el = R.el;
@@ -175,6 +175,13 @@
       d.open = anchorShown ? (g.Q.key === anchor) : (i === 0);   /* back link opens its own quarter; otherwise the newest */
       var s = el("summary");
       s.appendChild(el("h2", null, g.Q.label)); s.appendChild(el("span", "range", g.Q.range));
+      /* plan card: the plan that applied to this quarter (shows one-time quarter upgrades). Omitted if the database does not send it. */
+      var pr = g.rows.find(function (r) { return r.plan_name; });
+      if (pr) {
+        var pn = String(pr.plan_name), pq = Number(pr.plan_quarter_credits);
+        var ptxt = pn + (/\bplan$/i.test(pn) ? "" : " Plan") + (pq > 0 ? " (🪙 " + pq + " credits/quarter)" : "");
+        var pc = R.chip("pl", ptxt); pc.setAttribute("title", "Plan for this quarter"); s.appendChild(pc);
+      }
       s.appendChild(el("span", "n", countText(g.rows)));
       d.appendChild(s);
       var body = el("div", "qbody");
@@ -199,7 +206,8 @@
           if (r.service_id !== null && r.service_id !== undefined) srow.appendChild(R.chip("sid", "SID " + r.service_id));
           main.appendChild(srow);
         }
-        if (orderOnly && r.description) main.appendChild(el("div", "d", r.description));
+        /* description under every card, clamped to two lines by CSS (.rcard .d). Order text override if set, else the service description. */
+        if (r.description) main.appendChild(el("div", "d", r.description));
         a.appendChild(main);
         var side = el("div", "side");
         if (r.order_status) side.appendChild(statusChip(r));

@@ -13,6 +13,7 @@
 .navlink{display:inline-flex;align-items:center;gap:6px;color:var(--ink);text-decoration:none;font-size:13px;font-weight:700;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);min-height:38px}
 .navlink:hover{border-color:var(--blue-bright);color:var(--blue-bright)}
 .navlink.off{opacity:.35;pointer-events:none}
+.navlink[hidden]{display:none}   /* display:inline-flex above would otherwise override the hidden attribute (first/last report in a quarter showed a dead button) */
 .navlink small{display:block;font-weight:400;color:var(--muted);font-size:11px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .spacer{flex:1}
 .dl-btn{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;min-height:38px}
@@ -228,6 +229,7 @@ table.tbl tr:nth-child(even) td{background:var(--stripe)}
   --bn-bg:var(--amber-bg);--bn-ink:var(--amber-ink);--bn-bd:#5b4a14;
   --sid-bg:#1c2733;--sid-ink:#b9c7d6;--sid-bd:#44566a;
   --mo-bg:#0d3036;--mo-ink:#7fe3ea;--mo-bd:#1f7a84;
+  --pl-bg:#3a1627;--pl-ink:#ffc2d9;--pl-bd:#a8386a;
 }
 .chip{display:inline-block;font-size:11.5px;font-weight:700;line-height:1.4;padding:3px 10px;border-radius:20px;border:1px solid;white-space:nowrap}
 .chip.cr{background:var(--cr-bg);color:var(--cr-ink);border-color:var(--cr-bd)}
@@ -245,9 +247,7 @@ table.tbl tr:nth-child(even) td{background:var(--stripe)}
 .ledger .chips{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}
 .ledger .chip{font-size:12px;white-space:normal}
 .ledger .chips .bnote{flex-basis:100%}
-/* wider "Next report" button: long titles fit before they are cut off */
-#navNext{flex:0 1 auto;min-width:0;max-width:440px}
-#navNext>span{min-width:0;max-width:100%}
-#navNext small{max-width:100%}
+/* quarter header: plan card (rose) */
+.chip.pl{background:var(--pl-bg);color:var(--pl-ink);border-color:var(--pl-bd);align-self:center;white-space:normal}
 @media(max-width:640px){.ledger .svc{grid-column:1/-1}}
-@media print{:root{--cr-bg:#f1ebff;--cr-ink:#4b2a9a;--cr-bd:#8a63e0;--bn-bd:#d4a72c;--sid-bg:#eef1f4;--sid-ink:#24292f;--sid-bd:#8c959f;--mo-bg:#e0f7f9;--mo-ink:#0a5560;--mo-bd:#2aa3af}}
+@media print{:root{--cr-bg:#f1ebff;--cr-ink:#4b2a9a;--cr-bd:#8a63e0;--bn-bd:#d4a72c;--sid-bg:#eef1f4;--sid-ink:#24292f;--sid-bd:#8c959f;--mo-bg:#e0f7f9;--mo-ink:#0a5560;--mo-bd:#2aa3af;--pl-bg:#ffeaf1;--pl-ink:#8a1c4a;--pl-bd:#d6477f}}
