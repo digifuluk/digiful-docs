@@ -7,15 +7,15 @@
 <meta http-equiv="Content-Security-Policy" content="frame-src https://www.youtube-nocookie.com https://player.vimeo.com https://www.loom.com https://play.gumlet.io https://berrycast.app https://*.berrycast.app https://berrycast.com https://*.berrycast.com; object-src 'none'; base-uri 'self'">
 <title>Report | Digiful</title>
 <link rel="stylesheet" href="../css/digiful-dark.css">
-<link rel="stylesheet" href="assets/css/report.css?v=20261110b">
+<link rel="stylesheet" href="assets/css/report.css?v=20261110c">
 </head>
 <body>
 
 <nav class="topnav" aria-label="Report navigation">
   <div class="topnav-in">
     <a class="navlink" id="navBack" href="index.html">&#8249; Back to list</a>
-    <a class="navlink" id="navPrev" href="#" hidden><span>&#8249; Prev<span class="long">ious</span><small id="prevTitle"></small></span></a>
-    <a class="navlink" id="navNext" href="#" hidden><span>Next<span class="long"> report</span> &#8250;<small id="nextTitle"></small></span></a>
+    <a class="navlink" id="navPrev" href="#" hidden>&#8249; Last<span class="long"> report</span></a>
+    <a class="navlink" id="navNext" href="#" hidden>Next<span class="long"> report</span> &#8250;</a>
     <span class="spacer"></span>
     <button class="dl-btn" type="button" id="pdfBtn" hidden>&#8595; <span class="long">Download </span>PDF</button>
   </div>
@@ -44,7 +44,7 @@
 
 <script src="assets/js/config.js"></script>
 <script src="assets/js/demo-data.js"></script>
-<script src="assets/js/common.js?v=20261110b"></script>
+<script src="assets/js/common.js?v=20261110c"></script>
 <script src="assets/js/md-render.js"></script>
 <script>
 (function () {
@@ -146,12 +146,14 @@
     $("navBack").href = R.link("index.html", { y: Q.year }) + "#q-" + Q.key;
     var inQ = rows.filter(function (r) { return String(r.quarter_id) === Q.key; });
     var i = inQ.findIndex(function (r) { return r.report_instance_id === rep.report_instance_id; });
-    function wire(elId, titleId, target) {
+    /* generic button labels keep the bar the same size on every report; the target report's title is the hover tooltip / accessible name */
+    function wire(elId, word, target) {
       if (!target) return;
-      var a = $(elId); a.href = R.link("report.html", { id: target.report_instance_id }); a.hidden = false;
-      $(titleId).textContent = (target.report_label ? target.report_label + ": " : "") + target.title;
+      var a = $(elId), name = (target.report_label ? target.report_label + ": " : "") + target.title;
+      a.href = R.link("report.html", { id: target.report_instance_id }); a.hidden = false;
+      a.title = name; a.setAttribute("aria-label", word + " report: " + name);
     }
-    if (i >= 0) { wire("navPrev", "prevTitle", inQ[i - 1]); wire("navNext", "nextTitle", inQ[i + 1]); }
+    if (i >= 0) { wire("navPrev", "Last", inQ[i - 1]); wire("navNext", "Next", inQ[i + 1]); }
 
     $("pdfBtn").hidden = false; $("pdfBtn").addEventListener("click", function () { R.track("pdf_download", rep.report_instance_id, { page: "report" }); window.print(); });
     $("state").hidden = true; $("report").hidden = false;
